@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Innova Sourcing â Control de ProducciÃ³n</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --card: #ffffff;
+      --primary: #2563eb;
+      --primary-light: #dbeafe;
+      --success: #059669;
+      --success-light: #d1fae5;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --neutral: #6b7280;
+      --neutral-light: #f3f4f6;
+      --text: #1f2937;
+      --text-light: #6b7280;
+      --border: #e5e7eb;
+      --pink: #ec4899;
+      --pink-light: #fce7f3;
+      --blue: #3b82f6;
+      --blue-light: #dbeafe;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    /* HEADER */
+    .header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header h1 { font-size: 18px; font-weight: 700; }
+    .header .season-badge {
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* NAVIGATION TABS */
+    .nav-tabs {
+      display: flex;
+      gap: 0;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      overflow-x: auto;
+    }
+    .nav-tab {
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-light);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .nav-tab:hover { color: var(--primary); }
+    .nav-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* MAIN CONTENT */
+    .main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+    /* DASHBOARD CARDS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--border);
+    }
+    .stat-card .label { font-size: 12px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; }
+    .stat-card .sub { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+
+    /* PROGRESS BAR */
+    .progress-bar-container { background: var(--neutral-light); border-radius: 8px; height: 8px; overflow: hidden; margin-top: 8px; }
+    .progress-bar-fill { height: 100%; border-radius: 8px; transition: width 0.5s ease; }
+
+    /* FILTERS */
+    .filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-input {
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .filter-input:focus { border-color: var(--primary); }
+    select.filter-input { cursor: pointer; }
+
+    /* TABLE */
+    .table-container {
+      background: var(--card);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: var(--neutral-light);
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--text-light);
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+    }
+    tbody td {
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr:hover { background: #f9fafb; }
+
+    /* STATUS BADGES */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-sin_asignar { background: var(--neutral-light); color: var(--neutral); }
+    .badge-en_bordado { background: var(--blue-light); color: var(--blue); }
+    .badge-completado { background: var(--success-light); color: var(--success); }
+    .badge-correccion { background: var(--danger-light); color: var(--danger); }
+    .badge-pendiente { background: var(--neutral-light); color: var(--neutral); }
+    .badge-listo_para_confeccion { background: var(--warning-light); color: var(--warning); }
+    .badge-en_confeccion { background: var(--blue-light); color: var(--blue); }
+    .badge-en_proceso { background: var(--warning-light); color: var(--warning); }
+
+    /* GENDER BADGES */
+    .gender-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .gender-nina { background: var(--pink-light); color: var(--pink); }
+    .gender-nino { background: var(--blue-light); color: var(--blue); }
+
+    /* COLLECTION GROUPS */
+    .collection-section {
+      margin-bottom: 24px;
+    }
+    .collection-header {
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* EDITABLE CELL */
+    .editable {
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background 0.15s;
+      min-width: 60px;
+      display: inline-block;
+    }
+    .editable:hover { background: var(--primary-light); }
+    .editable input, .editable select {
+      font-family: inherit;
+      font-size: 13px;
+      padding: 4px 6px;
+      border: 1px solid var(--primary);
+      border-radius: 4px;
+      outline: none;
+      width: 100%;
+    }
+
+    /* LOADING */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      color: var(--text-light);
+      font-size: 15px;
+    }
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: white;
+      z-index: 999;
+      animation: slideUp 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .toast-success { background: var(--success); }
+    .toast-error { background: var(--danger); }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .header { padding: 12px 16px; }
+      .main { padding: 16px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .nav-tabs { padding: 0 12px; }
+      .nav-tab { padding: 10px 14px; font-size: 13px; }
+    }
+
+    /* DEADLINE BAR */
+    .deadline-bar {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 8px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-light);
+    }
+    .deadline-bar .days-left {
+      font-weight: 700;
+      color: var(--warning);
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>INNOVA SOURCING</h1>
+  <span class="season-badge" id="season-name">FW26-27</span>
+</div>
+
+<div class="deadline-bar">
+  <span>Deadline: <strong>15 julio 2026</strong></span>
+  <span>â¢</span>
+  <span class="days-left" id="days-left"></span>
+</div>
+
+<div class="nav-tabs">
+  <div class="nav-tab active" data-tab="dashboard">Dashboard</div>
+  <div class="nav-tab" data-tab="bordado">Control Bordado</div>
+  <div class="nav-tab" data-tab="confeccion">Control ConfecciÃ³n</div>
+  <div class="nav-tab" data-tab="productos">Productos</div>
+</div>
+
+<div class="main" id="content">
+  <div class="loading"><div class="spinner"></div>Cargando datos...</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ============================================================
+// SUPABASE CONNECTION
+// ============================================================
+const SUPABASE_URL = 'https://rtnvpriddrizwelgxxcl.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0bnZwcmlkZHJpendlbGd4eGNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NTQxNDksImV4cCI6MjA5NTMzMDE0OX0.fTodjktkbane5Vk-U7vg3XToXTsNZCeCk7bfCj-X31I';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ============================================================
+// STATE
+// ============================================================
+let allItems = [];
+let products = [];
+let currentTab = 'dashboard';
+let filters = { search: '', gender: '', collection: '', status: '' };
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  calculateDeadline();
+  await loadData();
+  setupTabs();
+  render();
+}
+
+function calculateDeadline() {
+  const deadline = new Date('2026-07-15');
+  const today = new Date();
+  const diff = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+  const el = document.getElementById('days-left');
+  if (diff > 0) {
+    el.textContent = `${diff} dÃ­as restantes`;
+    el.style.color = diff <= 14 ? 'var(--danger)' : diff <= 30 ? 'var(--warning)' : 'var(--success)';
+  } else {
+    el.textContent = 'Deadline pasado';
+    el.style.color = 'var(--danger)';
+  }
+}
+
+async function loadData() {
+  const [itemsRes, productsRes] = await Promise.all([
+    supabase.from('production_items').select('*, products(*)').order('id'),
+    supabase.from('products').select('*').order('collection')
+  ]);
+
+  if (itemsRes.error) { console.error(itemsRes.error); return; }
+  allItems = itemsRes.data || [];
+  products = productsRes.data || [];
+}
+
+function setupTabs() {
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentTab = tab.dataset.tab;
+      render();
+    });
+  });
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+  const content = document.getElementById('content');
+  switch (currentTab) {
+    case 'dashboard': content.innerHTML = renderDashboard(); break;
+    case 'bordado': content.innerHTML = renderBordado(); break;
+    case 'confeccion': content.innerHTML = renderConfeccion(); break;
+    case 'productos': content.innerHTML = renderProductos(); break;
+  }
+  attachListeners();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard() {
+  const total = allItems.length;
+  const totalQty = allItems.reduce((s, i) => s + i.quantity, 0);
+
+  // Embroidery stats
+  const embCompleted = allItems.filter(i => i.emb_status === 'completado');
+  const embInProgress = allItems.filter(i => i.emb_status === 'en_bordado');
+  const embPending = allItems.filter(i => i.emb_status === 'sin_asignar');
+  const embCorrection = allItems.filter(i => i.emb_status === 'correccion');
+  const embCompletedQty = embCompleted.reduce((s, i) => s + i.quantity, 0);
+  const embPct = totalQty > 0 ? Math.round((embCompletedQty / totalQty) * 100) : 0;
+
+  // Sewing stats
+  const sewCompleted = allItems.filter(i => i.sew_status === 'completado');
+  const sewInProgress = allItems.filter(i => i.sew_status === 'en_confeccion');
+  const sewReady = allItems.filter(i => i.sew_status === 'listo_para_confeccion');
+  const sewCompletedQty = sewCompleted.reduce((s, i) => s + i.quantity, 0);
+  const sewPct = totalQty > 0 ? Math.round((sewCompletedQty / totalQty) * 100) : 0;
+
+  // Collections
+  const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
+
+  return `
+    <h2 style="font-size:20px;margin-bottom:20px;">Dashboard de ProducciÃ³n</h2>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Total Ãtems</div>
+        <div class="value">${total}</div>
+        <div class="sub">${totalQty} prendas</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Colecciones</div>
+        <div class="value">${collections.length}</div>
+        <div class="sub">${products.length} productos Ãºnicos</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">NiÃ±a</div>
+        <div class="value" style="color:var(--pink)">${allItems.filter(i => i.products?.gender === 'NiÃ±a').reduce((s,i) => s + i.quantity, 0)}</div>
+        <div class="sub">prendas</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">NiÃ±o</div>
+        <div class="value" style="color:var(--blue)">${allItems.filter(i => i.products?.gender === 'NiÃ±o').reduce((s,i) => s + i.quantity, 0)}</div>
+        <div class="sub">prendas</div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card" style="grid-column: span 2;">
+        <div class="label">Bordado</div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <div class="value">${embPct}%</div>
+          <div class="sub">${embCompletedQty} / ${totalQty} prendas</div>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width:${embPct}%;background:var(--primary)"></div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--text-light)">
+          <span>âª Sin asignar: ${embPending.length}</span>
+          <span>ðµ En bordado: ${embInProgress.length}</span>
+          <span>â Completado: ${embCompleted.length}</span>
+          <span>ð´ CorrecciÃ³n: ${embCorrection.length}</span>
+        </div>
+      </div>
+      <div class="stat-card" style="grid-column: span 2;">
+        <div class="label">ConfecciÃ³n</div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <div class="value">${sewPct}%</div>
+          <div class="sub">${sewCompletedQty} / ${totalQty} prendas</div>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width:${sewPct}%;background:var(--success)"></div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--text-light)">
+          <span>âª Pendiente: ${allItems.filter(i => i.sew_status === 'pendiente').length}</span>
+          <span>ð¡ Listo: ${sewReady.length}</span>
+          <span>ðµ En confecciÃ³n: ${sewInProgress.length}</span>
+          <span>â Completado: ${sewCompleted.length}</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-size:16px;margin:24px 0 12px;">Por ColecciÃ³n</h3>
+    <div class="table-container"><div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>ColecciÃ³n</th><th>GÃ©nero</th><th>Productos</th><th>Ãtems</th><th>Prendas</th><th>Bordado</th><th>ConfecciÃ³n</th></tr>
+        </thead>
+        <tbody>
+          ${collections.map(col => {
+            const colItems = allItems.filter(i => i.products?.collection === col);
+            const gender = colItems[0]?.products?.gender;
+            const colProducts = [...new Set(colItems.map(i => i.products?.code))].length;
+            const colQty = colItems.reduce((s, i) => s + i.quantity, 0);
+            const colEmbDone = colItems.filter(i => i.emb_status === 'completado').reduce((s, i) => s + i.quantity, 0);
+            const colSewDone = colItems.filter(i => i.sew_status === 'completado').reduce((s, i) => s + i.quantity, 0);
+            const embP = colQty > 0 ? Math.round((colEmbDone/colQty)*100) : 0;
+            const sewP = colQty > 0 ? Math.round((colSewDone/colQty)*100) : 0;
+            return `<tr>
+              <td><strong>${col}</strong></td>
+              <td><span class="gender-badge gender-${gender === 'NiÃ±a' ? 'nina' : 'nino'}">${gender}</span></td>
+              <td>${colProducts}</td>
+              <td>${colItems.length}</td>
+              <td>${colQty}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div class="progress-bar-container" style="width:80px;"><div class="progress-bar-fill" style="width:${embP}%;background:var(--primary)"></div></div>
+                  <span style="font-size:12px;">${embP}%</span>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div class="progress-bar-container" style="width:80px;"><div class="progress-bar-fill" style="width:${sewP}%;background:var(--success)"></div></div>
+                  <span style="font-size:12px;">${sewP}%</span>
+                </div>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div></div>
+  `;
+}
+
+// ============================================================
+// BORDADO VIEW
+// ============================================================
+function renderBordado() {
+  const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
+  const statuses = ['sin_asignar', 'en_bordado', 'completado', 'correccion'];
+  const statusLabels = { sin_asignar: 'Sin asignar', en_bordado: 'En bordado', completado: 'Completado', correccion: 'CorrecciÃ³n' };
+
+  let filtered = [...allItems];
+  if (filters.search) {
+    const s = filters.search.toLowerCase();
+    filtered = filtered.filter(i =>
+      i.products?.code?.toLowerCase().includes(s) ||
+      i.products?.collection?.toLowerCase().includes(s) ||
+      i.products?.garment?.toLowerCase().includes(s) ||
+      (i.embroiderer || '').toLowerCase().includes(s)
+    );
+  }
+  if (filters.gender) filtered = filtered.filter(i => i.products?.gender === filters.gender);
+  if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
+  if (filters.status) filtered = filtered.filter(i => i.emb_status === filters.status);
+
+  return `
+    <h2 style="font-size:20px;margin-bottom:16px;">Control de Bordado</h2>
+    <div class="filters">
+      <input class="filter-input" type="text" placeholder="Buscar cÃ³digo, colecciÃ³n..." id="filter-search" value="${filters.search}" style="width:220px;">
+      <select class="filter-input" id="filter-gender">
+        <option value="">Todos los gÃ©neros</option>
+        <option value="NiÃ±a" ${filters.gender === 'NiÃ±a' ? 'selected' : ''}>NiÃ±a</option>
+        <option value="NiÃ±o" ${filters.gender === 'NiÃ±o' ? 'selected' : ''}>NiÃ±o</option>
+      </select>
+      <select class="filter-input" id="filter-collection">
+        <option value="">Todas las colecciones</option>
+        ${collections.map(c => `<option value="${c}" ${filters.collection === c ? 'selected' : ''}>${c}</option>`).join('')}
+      </select>
+      <select class="filter-input" id="filter-status">
+        <option value="">Todos los estados</option>
+        ${statuses.map(s => `<option value="${s}" ${filters.status === s ? 'selected' : ''}>${statusLabels[s]}</option>`).join('')}
+      </select>
+      <span style="font-size:13px;color:var(--text-light);">${filtered.length} Ã­tems</span>
+    </div>
+    <div class="table-container"><div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>CÃ³digo</th><th>ColecciÃ³n</th><th>Prenda</th><th>GÃ©nero</th><th>Talla</th><th>Cant.</th>
+            <th>Bordadora</th><th>Asignadas</th><th>F. Salida</th><th>F. Ret. Est.</th><th>F. Ret. Real</th><th>OK</th><th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered.map(item => `
+            <tr>
+              <td><strong>${item.products?.code || ''}</strong></td>
+              <td>${item.products?.collection || ''}</td>
+              <td>${item.products?.garment || ''}</td>
+              <td><span class="gender-badge gender-${item.products?.gender === 'NiÃ±a' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
+              <td>${item.size}</td>
+              <td><strong>${item.quantity}</strong></td>
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'embroiderer', 'text')">${item.embroiderer || 'â'}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'emb_qty_assigned', 'number')">${item.emb_qty_assigned || 0}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_sent', 'date')">${item.emb_date_sent || 'â'}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_expected', 'date')">${item.emb_date_expected || 'â'}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_returned', 'date')">${item.emb_date_returned || 'â'}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="toggleBool(${item.id}, 'emb_ok', ${item.emb_ok})">${item.emb_ok ? 'â' : 'â'}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="editStatus(this, ${item.id}, 'emb_status', ['sin_asignar','en_bordado','completado','correccion'])"
+                ><span class="badge badge-${item.emb_status}">${statusLabels[item.emb_status] || item.emb_status}</span></span>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div></div>
+  `;
+}
+
+// ============================================================
+// CONFECCION VIEW
+// ============================================================
+function renderConfeccion() {
+  const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
+  const statuses = ['pendiente', 'listo_para_confeccion', 'en_confeccion', 'completado'];
+  const statusLabels = { pendiente: 'Pendiente', listo_para_confeccion: 'Listo para confecciÃ³n', en_confeccion: 'En confecciÃ³n', completado: 'Completado' };
+
+  let filtered = [...allItems];
+  if (filters.search) {
+    const s = filters.search.toLowerCase();
+    filtered = filtered.filter(i =>
+      i.products?.code?.toLowerCase().includes(s) ||
+      i.products?.collection?.toLowerCase().includes(s) ||
+      (i.sewing_type || '').toLowerCase().includes(s)
+    );
+  }
+  if (filters.gender) filtered = filtered.filter(i => i.products?.gender === filters.gender);
+  if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
+  if (filters.status) filtered = filtered.filter(i => i.sew_status === filters.status);
+
+  return `
+    <h2 style="font-size:20px;margin-bottom:16px;">Control de ConfecciÃ³n</h2>
+    <div class="filters">
+      <input class="filter-input" type="text" placeholder="Buscar cÃ³digo, colecciÃ³n..." id="filter-search" value="${filters.search}" style="width:220px;">
+      <select class="filter-input" id="filter-gender">
+        <option value="">Todos los gÃ©neros</option>
+        <option value="NiÃ±a" ${filters.gender === 'NiÃ±a' ? 'selected' : ''}>NiÃ±a</option>
+        <option value="NiÃ±o" ${filters.gender === 'NiÃ±o' ? 'selected' : ''}>NiÃ±o</option>
+      </select>
+      <select class="filter-input" id="filter-collection">
+        <option value="">Todas las colecciones</option>
+        ${collections.map(c => `<option value="${c}" ${filters.collection === c ? 'selected' : ''}>${c}</option>`).join('')}
+      </select>
+      <select class="filter-input" id="filter-status">
+        <option value="">Todos los estados</option>
+        ${statuses.map(s => `<option value="${s}" ${filters.status === s ? 'selected' : ''}>${statusLabels[s]}</option>`).join('')}
+      </select>
+      <span style="font-size:13px;color:var(--text-light);">${filtered.length} Ã­tems</span>
+    </div>
+    <div class="table-container"><div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>CÃ³digo</th><th>ColecciÃ³n</th><th>Prenda</th><th>GÃ©nero</th><th>Talla</th><th>Cant.</th><th>OK Bordado</th>
+            <th>Tipo</th><th>Asignadas</th><th>F. Inicio</th><th>F. Ent. Est.</th><th>F. Ent. Real</th><th>OK</th><th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered.map(item => `
+            <tr>
+              <td><strong>${item.products?.code || ''}</strong></td>
+              <td>${item.products?.collection || ''}</td>
+              <td>${item.products?.garment || ''}</td>
+              <td><span class="gender-badge gender-${item.products?.gender === 'NiÃ±a' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
+              <td>${item.size}</td>
+              <td><strong>${item.quantity}</strong></td>
+              <td>${item.emb_ok ? 'â' : 'â¬'}</td>
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'sewing_type', 'text')">${item.sewing_type || 'â'}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'sew_qty_assigned', 'number')">${item.sew_qty_assigned || 0}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'sew_date_start', 'date')">${item.sew_date_start || 'â'}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'sew_date_expected', 'date')">${item.sew_date_expected || 'â'}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'sew_date_completed', 'date')">${item.sew_date_completed || 'â'}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="toggleBool(${item.id}, 'sew_ok', ${item.sew_ok})">${item.sew_ok ? 'â' : 'â'}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="editStatus(this, ${item.id}, 'sew_status', ['pendiente','listo_para_confeccion','en_confeccion','completado'])"
+                ><span class="badge badge-${item.sew_status}">${statusLabels[item.sew_status] || item.sew_status}</span></span>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div></div>
+  `;
+}
+
+// ============================================================
+// PRODUCTOS VIEW
+// ============================================================
+function renderProductos() {
+  return `
+    <h2 style="font-size:20px;margin-bottom:16px;">CatÃ¡logo de Productos</h2>
+    <div class="filters">
+      <input class="filter-input" type="text" placeholder="Buscar..." id="filter-search" value="${filters.search}" style="width:220px;">
+    </div>
+    <div class="table-container"><div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>CÃ³digo</th><th>ColecciÃ³n</th><th>Prenda</th><th>DescripciÃ³n</th><th>Tela</th><th>Color</th><th>GÃ©nero</th></tr>
+        </thead>
+        <tbody>
+          ${products.filter(p => {
+            if (!filters.search) return true;
+            const s = filters.search.toLowerCase();
+            return p.code.toLowerCase().includes(s) || p.collection.toLowerCase().includes(s) || p.garment.toLowerCase().includes(s);
+          }).map(p => `
+            <tr>
+              <td><strong>${p.code}</strong></td>
+              <td>${p.collection}</td>
+              <td>${p.garment}</td>
+              <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;">${p.description || ''}</td>
+              <td>${p.fabric || ''}</td>
+              <td>${p.color || ''}</td>
+              <td><span class="gender-badge gender-${p.gender === 'NiÃ±a' ? 'nina' : 'nino'}">${p.gender}</span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div></div>
+  `;
+}
+
+// ============================================================
+// INLINE EDITING
+// ============================================================
+async function editField(el, itemId, field, type) {
+  if (el.querySelector('input')) return;
+  const currentVal = el.textContent.trim();
+  const display = currentVal === 'â' ? '' : currentVal;
+
+  el.innerHTML = `<input type="${type}" value="${display}"
+    onblur="saveField(this, ${itemId}, '${field}')"
+    onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.dataset.cancel='1';this.blur()}"
+  >`;
+  el.querySelector('input').focus();
+}
+
+async function saveField(input, itemId, field) {
+  if (input.dataset.cancel) {
+    await loadData();
+    render();
+    return;
+  }
+
+  let value = input.value.trim();
+  if (value === '') value = null;
+  if (field.includes('qty') || field.includes('assigned')) value = value ? parseInt(value) : 0;
+
+  const { error } = await supabase.from('production_items').update({ [field]: value }).eq('id', itemId);
+
+  if (error) {
+    showToast('Error al guardar', 'error');
+    console.error(error);
+  } else {
+    showToast('Guardado');
+    // Update local data
+    const item = allItems.find(i => i.id === itemId);
+    if (item) item[field] = value;
+  }
+  render();
+}
+
+async function editStatus(el, itemId, field, options) {
+  if (el.querySelector('select')) return;
+  const labels = {
+    sin_asignar: 'Sin asignar', en_bordado: 'En bordado', completado: 'Completado', correccion: 'CorrecciÃ³n',
+    pendiente: 'Pendiente', listo_para_confeccion: 'Listo para confecciÃ³n', en_confeccion: 'En confecciÃ³n'
+  };
+  const item = allItems.find(i => i.id === itemId);
+  const current = item ? item[field] : '';
+
+  el.innerHTML = `<select onchange="saveField(this, ${itemId}, '${field}')" onblur="saveField(this, ${itemId}, '${field}')">
+    ${options.map(o => `<option value="${o}" ${o === current ? 'selected' : ''}>${labels[o] || o}</option>`).join('')}
+  </select>`;
+  el.querySelector('select').focus();
+}
+
+async function toggleBool(itemId, field, currentVal) {
+  const newVal = !currentVal;
+  const { error } = await supabase.from('production_items').update({ [field]: newVal }).eq('id', itemId);
+  if (error) {
+    showToast('Error al guardar', 'error');
+  } else {
+    showToast(newVal ? 'Marcado como OK' : 'Desmarcado');
+    const item = allItems.find(i => i.id === itemId);
+    if (item) item[field] = newVal;
+  }
+  render();
+}
+
+// ============================================================
+// FILTERS LISTENERS
+// ============================================================
+function attachListeners() {
+  const searchEl = document.getElementById('filter-search');
+  const genderEl = document.getElementById('filter-gender');
+  const collectionEl = document.getElementById('filter-collection');
+  const statusEl = document.getElementById('filter-status');
+
+  if (searchEl) {
+    searchEl.addEventListener('input', (e) => { filters.search = e.target.value; render(); });
+  }
+  if (genderEl) {
+    genderEl.addEventListener('change', (e) => { filters.gender = e.target.value; render(); });
+  }
+  if (collectionEl) {
+    collectionEl.addEventListener('change', (e) => { filters.collection = e.target.value; render(); });
+  }
+  if (statusEl) {
+    statusEl.addEventListener('change', (e) => { filters.status = e.target.value; render(); });
+  }
+}
+
+// ============================================================
+// TOAST NOTIFICATIONS
+// ============================================================
+function showToast(message, type = 'success') {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+// ============================================================
+// START
+// ============================================================
+init();
+</script>
+</body>
+</html>
