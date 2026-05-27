@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Innova Sourcing â Control de ProducciÃ³n</title>
+  <title>Innova Sourcing — Control de Producción</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -286,14 +286,14 @@
 
 <div class="deadline-bar">
   <span>Deadline: <strong>15 julio 2026</strong></span>
-  <span>â¢</span>
+  <span>•</span>
   <span class="days-left" id="days-left"></span>
 </div>
 
 <div class="nav-tabs">
   <div class="nav-tab active" data-tab="dashboard">Dashboard</div>
   <div class="nav-tab" data-tab="bordado">Control Bordado</div>
-  <div class="nav-tab" data-tab="confeccion">Control ConfecciÃ³n</div>
+  <div class="nav-tab" data-tab="confeccion">Control Confección</div>
   <div class="nav-tab" data-tab="productos">Productos</div>
 </div>
 
@@ -308,7 +308,7 @@
 // ============================================================
 const SUPABASE_URL = 'https://rtnvpriddrizwelgxxcl.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0bnZwcmlkZHJpendlbGd4eGNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NTQxNDksImV4cCI6MjA5NTMzMDE0OX0.fTodjktkbane5Vk-U7vg3XToXTsNZCeCk7bfCj-X31I';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ============================================================
 // STATE
@@ -334,7 +334,7 @@ function calculateDeadline() {
   const diff = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
   const el = document.getElementById('days-left');
   if (diff > 0) {
-    el.textContent = `${diff} dÃ­as restantes`;
+    el.textContent = `${diff} días restantes`;
     el.style.color = diff <= 14 ? 'var(--danger)' : diff <= 30 ? 'var(--warning)' : 'var(--success)';
   } else {
     el.textContent = 'Deadline pasado';
@@ -344,8 +344,8 @@ function calculateDeadline() {
 
 async function loadData() {
   const [itemsRes, productsRes] = await Promise.all([
-    supabase.from('production_items').select('*, products(*)').order('id'),
-    supabase.from('products').select('*').order('collection')
+    sb.from('production_items').select('*, products(*)').order('id'),
+    sb.from('products').select('*').order('collection')
   ]);
 
   if (itemsRes.error) { console.error(itemsRes.error); return; }
@@ -404,27 +404,27 @@ function renderDashboard() {
   const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
 
   return `
-    <h2 style="font-size:20px;margin-bottom:20px;">Dashboard de ProducciÃ³n</h2>
+    <h2 style="font-size:20px;margin-bottom:20px;">Dashboard de Producción</h2>
 
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="label">Total Ãtems</div>
+        <div class="label">Total Ítems</div>
         <div class="value">${total}</div>
         <div class="sub">${totalQty} prendas</div>
       </div>
       <div class="stat-card">
         <div class="label">Colecciones</div>
         <div class="value">${collections.length}</div>
-        <div class="sub">${products.length} productos Ãºnicos</div>
+        <div class="sub">${products.length} productos únicos</div>
       </div>
       <div class="stat-card">
-        <div class="label">NiÃ±a</div>
-        <div class="value" style="color:var(--pink)">${allItems.filter(i => i.products?.gender === 'NiÃ±a').reduce((s,i) => s + i.quantity, 0)}</div>
+        <div class="label">Niña</div>
+        <div class="value" style="color:var(--pink)">${allItems.filter(i => i.products?.gender === 'Niña').reduce((s,i) => s + i.quantity, 0)}</div>
         <div class="sub">prendas</div>
       </div>
       <div class="stat-card">
-        <div class="label">NiÃ±o</div>
-        <div class="value" style="color:var(--blue)">${allItems.filter(i => i.products?.gender === 'NiÃ±o').reduce((s,i) => s + i.quantity, 0)}</div>
+        <div class="label">Niño</div>
+        <div class="value" style="color:var(--blue)">${allItems.filter(i => i.products?.gender === 'Niño').reduce((s,i) => s + i.quantity, 0)}</div>
         <div class="sub">prendas</div>
       </div>
     </div>
@@ -440,14 +440,14 @@ function renderDashboard() {
           <div class="progress-bar-fill" style="width:${embPct}%;background:var(--primary)"></div>
         </div>
         <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--text-light)">
-          <span>âª Sin asignar: ${embPending.length}</span>
-          <span>ðµ En bordado: ${embInProgress.length}</span>
-          <span>â Completado: ${embCompleted.length}</span>
-          <span>ð´ CorrecciÃ³n: ${embCorrection.length}</span>
+          <span>⚪ Sin asignar: ${embPending.length}</span>
+          <span>🔵 En bordado: ${embInProgress.length}</span>
+          <span>✅ Completado: ${embCompleted.length}</span>
+          <span>🔴 Corrección: ${embCorrection.length}</span>
         </div>
       </div>
       <div class="stat-card" style="grid-column: span 2;">
-        <div class="label">ConfecciÃ³n</div>
+        <div class="label">Confección</div>
         <div style="display:flex;justify-content:space-between;align-items:baseline;">
           <div class="value">${sewPct}%</div>
           <div class="sub">${sewCompletedQty} / ${totalQty} prendas</div>
@@ -456,19 +456,19 @@ function renderDashboard() {
           <div class="progress-bar-fill" style="width:${sewPct}%;background:var(--success)"></div>
         </div>
         <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--text-light)">
-          <span>âª Pendiente: ${allItems.filter(i => i.sew_status === 'pendiente').length}</span>
-          <span>ð¡ Listo: ${sewReady.length}</span>
-          <span>ðµ En confecciÃ³n: ${sewInProgress.length}</span>
-          <span>â Completado: ${sewCompleted.length}</span>
+          <span>⚪ Pendiente: ${allItems.filter(i => i.sew_status === 'pendiente').length}</span>
+          <span>🟡 Listo: ${sewReady.length}</span>
+          <span>🔵 En confección: ${sewInProgress.length}</span>
+          <span>✅ Completado: ${sewCompleted.length}</span>
         </div>
       </div>
     </div>
 
-    <h3 style="font-size:16px;margin:24px 0 12px;">Por ColecciÃ³n</h3>
+    <h3 style="font-size:16px;margin:24px 0 12px;">Por Colección</h3>
     <div class="table-container"><div class="table-scroll">
       <table>
         <thead>
-          <tr><th>ColecciÃ³n</th><th>GÃ©nero</th><th>Productos</th><th>Ãtems</th><th>Prendas</th><th>Bordado</th><th>ConfecciÃ³n</th></tr>
+          <tr><th>Colección</th><th>Género</th><th>Productos</th><th>Ítems</th><th>Prendas</th><th>Bordado</th><th>Confección</th></tr>
         </thead>
         <tbody>
           ${collections.map(col => {
@@ -482,7 +482,7 @@ function renderDashboard() {
             const sewP = colQty > 0 ? Math.round((colSewDone/colQty)*100) : 0;
             return `<tr>
               <td><strong>${col}</strong></td>
-              <td><span class="gender-badge gender-${gender === 'NiÃ±a' ? 'nina' : 'nino'}">${gender}</span></td>
+              <td><span class="gender-badge gender-${gender === 'Niña' ? 'nina' : 'nino'}">${gender}</span></td>
               <td>${colProducts}</td>
               <td>${colItems.length}</td>
               <td>${colQty}</td>
@@ -512,7 +512,7 @@ function renderDashboard() {
 function renderBordado() {
   const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
   const statuses = ['sin_asignar', 'en_bordado', 'completado', 'correccion'];
-  const statusLabels = { sin_asignar: 'Sin asignar', en_bordado: 'En bordado', completado: 'Completado', correccion: 'CorrecciÃ³n' };
+  const statusLabels = { sin_asignar: 'Sin asignar', en_bordado: 'En bordado', completado: 'Completado', correccion: 'Corrección' };
 
   let filtered = [...allItems];
   if (filters.search) {
@@ -531,11 +531,11 @@ function renderBordado() {
   return `
     <h2 style="font-size:20px;margin-bottom:16px;">Control de Bordado</h2>
     <div class="filters">
-      <input class="filter-input" type="text" placeholder="Buscar cÃ³digo, colecciÃ³n..." id="filter-search" value="${filters.search}" style="width:220px;">
+      <input class="filter-input" type="text" placeholder="Buscar código, colección..." id="filter-search" value="${filters.search}" style="width:220px;">
       <select class="filter-input" id="filter-gender">
-        <option value="">Todos los gÃ©neros</option>
-        <option value="NiÃ±a" ${filters.gender === 'NiÃ±a' ? 'selected' : ''}>NiÃ±a</option>
-        <option value="NiÃ±o" ${filters.gender === 'NiÃ±o' ? 'selected' : ''}>NiÃ±o</option>
+        <option value="">Todos los géneros</option>
+        <option value="Niña" ${filters.gender === 'Niña' ? 'selected' : ''}>Niña</option>
+        <option value="Niño" ${filters.gender === 'Niño' ? 'selected' : ''}>Niño</option>
       </select>
       <select class="filter-input" id="filter-collection">
         <option value="">Todas las colecciones</option>
@@ -545,13 +545,13 @@ function renderBordado() {
         <option value="">Todos los estados</option>
         ${statuses.map(s => `<option value="${s}" ${filters.status === s ? 'selected' : ''}>${statusLabels[s]}</option>`).join('')}
       </select>
-      <span style="font-size:13px;color:var(--text-light);">${filtered.length} Ã­tems</span>
+      <span style="font-size:13px;color:var(--text-light);">${filtered.length} ítems</span>
     </div>
     <div class="table-container"><div class="table-scroll">
       <table>
         <thead>
           <tr>
-            <th>CÃ³digo</th><th>ColecciÃ³n</th><th>Prenda</th><th>GÃ©nero</th><th>Talla</th><th>Cant.</th>
+            <th>Código</th><th>Colección</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th>
             <th>Bordadora</th><th>Asignadas</th><th>F. Salida</th><th>F. Ret. Est.</th><th>F. Ret. Real</th><th>OK</th><th>Estado</th>
           </tr>
         </thead>
@@ -561,26 +561,26 @@ function renderBordado() {
               <td><strong>${item.products?.code || ''}</strong></td>
               <td>${item.products?.collection || ''}</td>
               <td>${item.products?.garment || ''}</td>
-              <td><span class="gender-badge gender-${item.products?.gender === 'NiÃ±a' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
+              <td><span class="gender-badge gender-${item.products?.gender === 'Niña' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
               <td>${item.size}</td>
               <td><strong>${item.quantity}</strong></td>
               <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'embroiderer', 'text')">${item.embroiderer || 'â'}</span>
+                <span class="editable" onclick="editField(this, ${item.id}, 'embroiderer', 'text')">${item.embroiderer || '—'}</span>
               </td>
               <td>
                 <span class="editable" onclick="editField(this, ${item.id}, 'emb_qty_assigned', 'number')">${item.emb_qty_assigned || 0}</span>
               </td>
               <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_sent', 'date')">${item.emb_date_sent || 'â'}</span>
+                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_sent', 'date')">${item.emb_date_sent || '—'}</span>
               </td>
               <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_expected', 'date')">${item.emb_date_expected || 'â'}</span>
+                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_expected', 'date')">${item.emb_date_expected || '—'}</span>
               </td>
               <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_returned', 'date')">${item.emb_date_returned || 'â'}</span>
+                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_returned', 'date')">${item.emb_date_returned || '—'}</span>
               </td>
               <td>
-                <span class="editable" onclick="toggleBool(${item.id}, 'emb_ok', ${item.emb_ok})">${item.emb_ok ? 'â' : 'â'}</span>
+                <span class="editable" onclick="toggleBool(${item.id}, 'emb_ok', ${item.emb_ok})">${item.emb_ok ? '✅' : '—'}</span>
               </td>
               <td>
                 <span class="editable" onclick="editStatus(this, ${item.id}, 'emb_status', ['sin_asignar','en_bordado','completado','correccion'])"
@@ -600,7 +600,7 @@ function renderBordado() {
 function renderConfeccion() {
   const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
   const statuses = ['pendiente', 'listo_para_confeccion', 'en_confeccion', 'completado'];
-  const statusLabels = { pendiente: 'Pendiente', listo_para_confeccion: 'Listo para confecciÃ³n', en_confeccion: 'En confecciÃ³n', completado: 'Completado' };
+  const statusLabels = { pendiente: 'Pendiente', listo_para_confeccion: 'Listo para confección', en_confeccion: 'En confección', completado: 'Completado' };
 
   let filtered = [...allItems];
   if (filters.search) {
@@ -616,13 +616,13 @@ function renderConfeccion() {
   if (filters.status) filtered = filtered.filter(i => i.sew_status === filters.status);
 
   return `
-    <h2 style="font-size:20px;margin-bottom:16px;">Control de ConfecciÃ³n</h2>
+    <h2 style="font-size:20px;margin-bottom:16px;">Control de Confección</h2>
     <div class="filters">
-      <input class="filter-input" type="text" placeholder="Buscar cÃ³digo, colecciÃ³n..." id="filter-search" value="${filters.search}" style="width:220px;">
+      <input class="filter-input" type="text" placeholder="Buscar código, colección..." id="filter-search" value="${filters.search}" style="width:220px;">
       <select class="filter-input" id="filter-gender">
-        <option value="">Todos los gÃ©neros</option>
-        <option value="NiÃ±a" ${filters.gender === 'NiÃ±a' ? 'selected' : ''}>NiÃ±a</option>
-        <option value="NiÃ±o" ${filters.gender === 'NiÃ±o' ? 'selected' : ''}>NiÃ±o</option>
+        <option value="">Todos los géneros</option>
+        <option value="Niña" ${filters.gender === 'Niña' ? 'selected' : ''}>Niña</option>
+        <option value="Niño" ${filters.gender === 'Niño' ? 'selected' : ''}>Niño</option>
       </select>
       <select class="filter-input" id="filter-collection">
         <option value="">Todas las colecciones</option>
@@ -632,13 +632,13 @@ function renderConfeccion() {
         <option value="">Todos los estados</option>
         ${statuses.map(s => `<option value="${s}" ${filters.status === s ? 'selected' : ''}>${statusLabels[s]}</option>`).join('')}
       </select>
-      <span style="font-size:13px;color:var(--text-light);">${filtered.length} Ã­tems</span>
+      <span style="font-size:13px;color:var(--text-light);">${filtered.length} ítems</span>
     </div>
     <div class="table-container"><div class="table-scroll">
       <table>
         <thead>
           <tr>
-            <th>CÃ³digo</th><th>ColecciÃ³n</th><th>Prenda</th><th>GÃ©nero</th><th>Talla</th><th>Cant.</th><th>OK Bordado</th>
+            <th>Código</th><th>Colección</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th><th>OK Bordado</th>
             <th>Tipo</th><th>Asignadas</th><th>F. Inicio</th><th>F. Ent. Est.</th><th>F. Ent. Real</th><th>OK</th><th>Estado</th>
           </tr>
         </thead>
@@ -648,27 +648,27 @@ function renderConfeccion() {
               <td><strong>${item.products?.code || ''}</strong></td>
               <td>${item.products?.collection || ''}</td>
               <td>${item.products?.garment || ''}</td>
-              <td><span class="gender-badge gender-${item.products?.gender === 'NiÃ±a' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
+              <td><span class="gender-badge gender-${item.products?.gender === 'Niña' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
               <td>${item.size}</td>
               <td><strong>${item.quantity}</strong></td>
-              <td>${item.emb_ok ? 'â' : 'â¬'}</td>
+              <td>${item.emb_ok ? '✅' : '⬜'}</td>
               <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'sewing_type', 'text')">${item.sewing_type || 'â'}</span>
+                <span class="editable" onclick="editField(this, ${item.id}, 'sewing_type', 'text')">${item.sewing_type || '—'}</span>
               </td>
               <td>
                 <span class="editable" onclick="editField(this, ${item.id}, 'sew_qty_assigned', 'number')">${item.sew_qty_assigned || 0}</span>
               </td>
               <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'sew_date_start', 'date')">${item.sew_date_start || 'â'}</span>
+                <span class="editable" onclick="editField(this, ${item.id}, 'sew_date_start', 'date')">${item.sew_date_start || '—'}</span>
               </td>
               <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'sew_date_expected', 'date')">${item.sew_date_expected || 'â'}</span>
+                <span class="editable" onclick="editField(this, ${item.id}, 'sew_date_expected', 'date')">${item.sew_date_expected || '—'}</span>
               </td>
               <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'sew_date_completed', 'date')">${item.sew_date_completed || 'â'}</span>
+                <span class="editable" onclick="editField(this, ${item.id}, 'sew_date_completed', 'date')">${item.sew_date_completed || '—'}</span>
               </td>
               <td>
-                <span class="editable" onclick="toggleBool(${item.id}, 'sew_ok', ${item.sew_ok})">${item.sew_ok ? 'â' : 'â'}</span>
+                <span class="editable" onclick="toggleBool(${item.id}, 'sew_ok', ${item.sew_ok})">${item.sew_ok ? '✅' : '—'}</span>
               </td>
               <td>
                 <span class="editable" onclick="editStatus(this, ${item.id}, 'sew_status', ['pendiente','listo_para_confeccion','en_confeccion','completado'])"
@@ -687,14 +687,14 @@ function renderConfeccion() {
 // ============================================================
 function renderProductos() {
   return `
-    <h2 style="font-size:20px;margin-bottom:16px;">CatÃ¡logo de Productos</h2>
+    <h2 style="font-size:20px;margin-bottom:16px;">Catálogo de Productos</h2>
     <div class="filters">
       <input class="filter-input" type="text" placeholder="Buscar..." id="filter-search" value="${filters.search}" style="width:220px;">
     </div>
     <div class="table-container"><div class="table-scroll">
       <table>
         <thead>
-          <tr><th>CÃ³digo</th><th>ColecciÃ³n</th><th>Prenda</th><th>DescripciÃ³n</th><th>Tela</th><th>Color</th><th>GÃ©nero</th></tr>
+          <tr><th>Código</th><th>Colección</th><th>Prenda</th><th>Descripción</th><th>Tela</th><th>Color</th><th>Género</th></tr>
         </thead>
         <tbody>
           ${products.filter(p => {
@@ -709,7 +709,7 @@ function renderProductos() {
               <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;">${p.description || ''}</td>
               <td>${p.fabric || ''}</td>
               <td>${p.color || ''}</td>
-              <td><span class="gender-badge gender-${p.gender === 'NiÃ±a' ? 'nina' : 'nino'}">${p.gender}</span></td>
+              <td><span class="gender-badge gender-${p.gender === 'Niña' ? 'nina' : 'nino'}">${p.gender}</span></td>
             </tr>
           `).join('')}
         </tbody>
@@ -724,7 +724,7 @@ function renderProductos() {
 async function editField(el, itemId, field, type) {
   if (el.querySelector('input')) return;
   const currentVal = el.textContent.trim();
-  const display = currentVal === 'â' ? '' : currentVal;
+  const display = currentVal === '—' ? '' : currentVal;
 
   el.innerHTML = `<input type="${type}" value="${display}"
     onblur="saveField(this, ${itemId}, '${field}')"
@@ -744,7 +744,7 @@ async function saveField(input, itemId, field) {
   if (value === '') value = null;
   if (field.includes('qty') || field.includes('assigned')) value = value ? parseInt(value) : 0;
 
-  const { error } = await supabase.from('production_items').update({ [field]: value }).eq('id', itemId);
+  const { error } = await sb.from('production_items').update({ [field]: value }).eq('id', itemId);
 
   if (error) {
     showToast('Error al guardar', 'error');
@@ -761,8 +761,8 @@ async function saveField(input, itemId, field) {
 async function editStatus(el, itemId, field, options) {
   if (el.querySelector('select')) return;
   const labels = {
-    sin_asignar: 'Sin asignar', en_bordado: 'En bordado', completado: 'Completado', correccion: 'CorrecciÃ³n',
-    pendiente: 'Pendiente', listo_para_confeccion: 'Listo para confecciÃ³n', en_confeccion: 'En confecciÃ³n'
+    sin_asignar: 'Sin asignar', en_bordado: 'En bordado', completado: 'Completado', correccion: 'Corrección',
+    pendiente: 'Pendiente', listo_para_confeccion: 'Listo para confección', en_confeccion: 'En confección'
   };
   const item = allItems.find(i => i.id === itemId);
   const current = item ? item[field] : '';
@@ -775,7 +775,7 @@ async function editStatus(el, itemId, field, options) {
 
 async function toggleBool(itemId, field, currentVal) {
   const newVal = !currentVal;
-  const { error } = await supabase.from('production_items').update({ [field]: newVal }).eq('id', itemId);
+  const { error } = await sb.from('production_items').update({ [field]: newVal }).eq('id', itemId);
   if (error) {
     showToast('Error al guardar', 'error');
   } else {
