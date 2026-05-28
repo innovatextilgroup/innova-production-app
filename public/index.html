@@ -26,12 +26,13 @@
       --pink-light: #fce7f3;
       --blue: #3b82f6;
       --blue-light: #dbeafe;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
 
-    /* HEADER */
     .header {
       background: white;
       border-bottom: 1px solid var(--border);
@@ -48,15 +49,25 @@
       background: var(--primary-light);
       color: var(--primary);
       padding: 4px 12px;
-      border-radius: 20px;
+      border-radius: 6px;
       font-size: 13px;
       font-weight: 600;
     }
 
-    /* NAVIGATION TABS */
+    .deadline-bar {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 8px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-light);
+    }
+    .deadline-bar .days-left { font-weight: 700; color: var(--warning); }
+
     .nav-tabs {
       display: flex;
-      gap: 0;
       background: white;
       border-bottom: 1px solid var(--border);
       padding: 0 24px;
@@ -70,40 +81,37 @@
       cursor: pointer;
       border-bottom: 2px solid transparent;
       white-space: nowrap;
-      transition: all 0.2s;
     }
-    .nav-tab:hover { color: var(--primary); }
-    .nav-tab.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-      font-weight: 600;
-    }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
 
-    /* MAIN CONTENT */
-    .main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+    .main { padding: 24px; max-width: 1500px; margin: 0 auto; }
 
-    /* DASHBOARD CARDS */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
     .stat-card {
       background: var(--card);
+      padding: 16px 20px;
       border-radius: 12px;
-      padding: 20px;
       border: 1px solid var(--border);
     }
-    .stat-card .label { font-size: 12px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .stat-card .value { font-size: 28px; font-weight: 700; }
+    .stat-card .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-light);
+      font-weight: 600;
+    }
+    .stat-card .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
     .stat-card .sub { font-size: 12px; color: var(--text-light); margin-top: 4px; }
 
-    /* PROGRESS BAR */
     .progress-bar-container { background: var(--neutral-light); border-radius: 8px; height: 8px; overflow: hidden; margin-top: 8px; }
     .progress-bar-fill { height: 100%; border-radius: 8px; transition: width 0.5s ease; }
 
-    /* FILTERS */
     .filters {
       display: flex;
       gap: 12px;
@@ -123,7 +131,6 @@
     .filter-input:focus { border-color: var(--primary); }
     select.filter-input { cursor: pointer; }
 
-    /* TABLE */
     .table-container {
       background: var(--card);
       border-radius: 12px;
@@ -152,7 +159,6 @@
     }
     tbody tr:hover { background: #f9fafb; }
 
-    /* STATUS BADGES */
     .badge {
       display: inline-block;
       padding: 3px 10px;
@@ -161,15 +167,14 @@
       font-weight: 600;
     }
     .badge-sin_asignar { background: var(--neutral-light); color: var(--neutral); }
+    .badge-pendiente { background: var(--amber-light); color: var(--amber); }
     .badge-en_bordado { background: var(--blue-light); color: var(--blue); }
+    .badge-entregado { background: var(--success-light); color: var(--success); }
     .badge-completado { background: var(--success-light); color: var(--success); }
     .badge-correccion { background: var(--danger-light); color: var(--danger); }
-    .badge-pendiente { background: var(--neutral-light); color: var(--neutral); }
     .badge-listo_para_confeccion { background: var(--warning-light); color: var(--warning); }
     .badge-en_confeccion { background: var(--blue-light); color: var(--blue); }
-    .badge-en_proceso { background: var(--warning-light); color: var(--warning); }
 
-    /* GENDER BADGES */
     .gender-badge {
       display: inline-block;
       padding: 2px 8px;
@@ -180,20 +185,6 @@
     .gender-nina { background: var(--pink-light); color: var(--pink); }
     .gender-nino { background: var(--blue-light); color: var(--blue); }
 
-    /* COLLECTION GROUPS */
-    .collection-section {
-      margin-bottom: 24px;
-    }
-    .collection-header {
-      font-size: 15px;
-      font-weight: 600;
-      padding: 12px 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* EDITABLE CELL */
     .editable {
       cursor: pointer;
       padding: 4px 8px;
@@ -213,7 +204,6 @@
       width: 100%;
     }
 
-    /* LOADING */
     .loading {
       display: flex;
       align-items: center;
@@ -233,7 +223,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* TOAST */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -251,7 +240,6 @@
     .toast-error { background: var(--danger); }
     @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    /* RESPONSIVE */
     @media (max-width: 768px) {
       .header { padding: 12px 16px; }
       .main { padding: 16px; }
@@ -260,21 +248,121 @@
       .nav-tab { padding: 10px 14px; font-size: 13px; }
     }
 
-    /* DEADLINE BAR */
-    .deadline-bar {
-      background: white;
-      border-bottom: 1px solid var(--border);
-      padding: 8px 24px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 13px;
+    /* EXPANDABLE ROWS */
+    .item-row { cursor: pointer; transition: background 0.15s; }
+    .item-row:hover { background: #f0f7ff !important; }
+    .item-row td:first-child .chevron {
+      display: inline-block;
+      transition: transform 0.2s;
+      font-size: 11px;
+      margin-right: 4px;
       color: var(--text-light);
     }
-    .deadline-bar .days-left {
-      font-weight: 700;
-      color: var(--warning);
+    .item-row.expanded td:first-child .chevron { transform: rotate(90deg); }
+    .sub-row { display: none; }
+    .sub-row.visible { display: table-row; }
+    .sub-row td {
+      padding: 0 14px 12px 14px;
+      border-top: none;
+      background: var(--neutral-light);
     }
+    .sub-table {
+      width: 100%;
+      font-size: 12px;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+    .sub-table th {
+      padding: 4px 10px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--text-light);
+      border-bottom: 1px solid var(--border);
+    }
+    .sub-table td {
+      padding: 6px 10px;
+      border-top: 1px solid var(--border);
+      white-space: nowrap;
+      background: transparent;
+    }
+    .sub-table tr:first-child td { border-top: none; }
+    .assign-alert {
+      color: var(--danger);
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .btn-small {
+      padding: 4px 12px;
+      font-size: 12px;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .btn-small:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-primary-small {
+      padding: 4px 12px;
+      font-size: 12px;
+      font-family: inherit;
+      border: none;
+      border-radius: 6px;
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn-primary-small:hover { background: #1d4ed8; }
+    .btn-danger-small {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-family: inherit;
+      border: 1px solid var(--danger-light);
+      border-radius: 6px;
+      background: var(--danger-light);
+      color: var(--danger);
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .assign-form {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .assign-form input, .assign-form select {
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+    }
+    .assign-form label {
+      font-size: 11px;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+    .status-counters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .status-counter {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .assign-col { font-weight: 600; }
+    .assign-col.full { color: var(--success); }
+    .assign-col.partial { color: var(--warning); }
+    .assign-col.none { color: var(--neutral); }
   </style>
 </head>
 <body>
@@ -303,28 +391,20 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ============================================================
-// SUPABASE CONNECTION
-// ============================================================
 const SUPABASE_URL = 'https://rtnvpriddrizwelgxxcl.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0bnZwcmlkZHJpendlbGd4eGNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NTQxNDksImV4cCI6MjA5NTMzMDE0OX0.fTodjktkbane5Vk-U7vg3XToXTsNZCeCk7bfCj-X31I';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ============================================================
-// STATE
-// ============================================================
 let allItems = [];
 let products = [];
+let allAssignments = [];
 let currentTab = 'dashboard';
 let filters = { search: '', gender: '', collection: '', status: '' };
+let expandedItems = new Set();
 
-// ============================================================
-// INIT
-// ============================================================
 async function init() {
   calculateDeadline();
   await loadData();
-  setupTabs();
   render();
 }
 
@@ -333,24 +413,20 @@ function calculateDeadline() {
   const today = new Date();
   const diff = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
   const el = document.getElementById('days-left');
-  if (diff > 0) {
-    el.textContent = `${diff} días restantes`;
-    el.style.color = diff <= 14 ? 'var(--danger)' : diff <= 30 ? 'var(--warning)' : 'var(--success)';
-  } else {
-    el.textContent = 'Deadline pasado';
-    el.style.color = 'var(--danger)';
-  }
+  if (el) el.textContent = diff > 0 ? `${diff} días restantes` : 'Deadline pasado';
 }
 
 async function loadData() {
-  const [itemsRes, productsRes] = await Promise.all([
+  const [itemsRes, productsRes, assignRes] = await Promise.all([
     sb.from('production_items').select('*, products(*)').order('id'),
-    sb.from('products').select('*').order('collection')
+    sb.from('products').select('*').order('collection'),
+    sb.from('bordado_assignments').select('*').order('created_at')
   ]);
 
   if (itemsRes.error) { console.error(itemsRes.error); return; }
   allItems = itemsRes.data || [];
   products = productsRes.data || [];
+  allAssignments = assignRes.data || [];
 }
 
 function setupTabs() {
@@ -359,14 +435,12 @@ function setupTabs() {
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentTab = tab.dataset.tab;
+      filters = { search: '', gender: '', collection: '', status: '' };
       render();
     });
   });
 }
 
-// ============================================================
-// RENDER
-// ============================================================
 function render() {
   const content = document.getElementById('content');
   switch (currentTab) {
@@ -378,34 +452,72 @@ function render() {
   attachListeners();
 }
 
-// ============================================================
-// DASHBOARD
-// ============================================================
+// === HELPERS ===
+function getItemAssignments(itemId) {
+  return allAssignments.filter(a => a.production_item_id === itemId);
+}
+
+function getItemBordadoInfo(item) {
+  const assigns = getItemAssignments(item.id);
+  const totalAssigned = assigns.reduce((s, a) => s + a.cantidad, 0);
+  const pending = item.quantity - totalAssigned;
+
+  let status = 'sin_asignar';
+  if (assigns.length > 0) {
+    const states = assigns.map(a => a.estado);
+    if (states.every(s => s === 'entregado') && pending <= 0) {
+      status = 'entregado';
+    } else if (states.some(s => s === 'en_bordado')) {
+      status = 'en_bordado';
+    } else if (states.some(s => s === 'entregado') && !states.every(s => s === 'entregado')) {
+      status = 'en_bordado';
+    } else {
+      status = 'pendiente';
+    }
+  }
+
+  const bordadora = assigns.length === 1 ? assigns[0].bordadora : (assigns.length > 1 ? 'Varias' : '—');
+  const fechaSalida = assigns.length === 1 ? assigns[0].fecha_salida : null;
+  const fechaRetEst = assigns.length === 1 ? assigns[0].fecha_retorno_est : null;
+
+  return { assigns, totalAssigned, pending, status, bordadora, fechaSalida, fechaRetEst };
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('es', { day: '2-digit', month: 'short' });
+}
+
+// === DASHBOARD ===
 function renderDashboard() {
   const total = allItems.length;
   const totalQty = allItems.reduce((s, i) => s + i.quantity, 0);
 
-  // Embroidery stats
-  const embCompleted = allItems.filter(i => i.emb_status === 'completado');
-  const embInProgress = allItems.filter(i => i.emb_status === 'en_bordado');
-  const embPending = allItems.filter(i => i.emb_status === 'sin_asignar');
-  const embCorrection = allItems.filter(i => i.emb_status === 'correccion');
-  const embCompletedQty = embCompleted.reduce((s, i) => s + i.quantity, 0);
-  const embPct = totalQty > 0 ? Math.round((embCompletedQty / totalQty) * 100) : 0;
+  let embEntregado = 0, embEnBordado = 0, embPendiente = 0, embSinAsignar = 0;
+  allItems.forEach(item => {
+    const info = getItemBordadoInfo(item);
+    if (info.status === 'entregado') embEntregado++;
+    else if (info.status === 'en_bordado') embEnBordado++;
+    else if (info.status === 'pendiente') embPendiente++;
+    else embSinAsignar++;
+  });
 
-  // Sewing stats
+  const embEntregadoQty = allItems.filter(i => getItemBordadoInfo(i).status === 'entregado').reduce((s, i) => s + i.quantity, 0);
+  const embPct = totalQty > 0 ? Math.round((embEntregadoQty / totalQty) * 100) : 0;
+
   const sewCompleted = allItems.filter(i => i.sew_status === 'completado');
   const sewInProgress = allItems.filter(i => i.sew_status === 'en_confeccion');
   const sewReady = allItems.filter(i => i.sew_status === 'listo_para_confeccion');
   const sewCompletedQty = sewCompleted.reduce((s, i) => s + i.quantity, 0);
   const sewPct = totalQty > 0 ? Math.round((sewCompletedQty / totalQty) * 100) : 0;
 
-  // Collections
   const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
+  const genders = { 'Niña': 0, 'Niño': 0 };
+  allItems.forEach(i => { if (i.products?.gender && genders[i.products.gender] !== undefined) genders[i.products.gender] += i.quantity; });
 
   return `
-    <h2 style="font-size:20px;margin-bottom:20px;">Dashboard de Producción</h2>
-
+    <h2 style="font-size:20px;margin-bottom:16px;">Dashboard de Producción</h2>
     <div class="stats-grid">
       <div class="stat-card">
         <div class="label">Total Ítems</div>
@@ -419,44 +531,40 @@ function renderDashboard() {
       </div>
       <div class="stat-card">
         <div class="label">Niña</div>
-        <div class="value" style="color:var(--pink)">${allItems.filter(i => i.products?.gender === 'Niña').reduce((s,i) => s + i.quantity, 0)}</div>
+        <div class="value" style="color:var(--pink)">${genders['Niña']}</div>
         <div class="sub">prendas</div>
       </div>
       <div class="stat-card">
         <div class="label">Niño</div>
-        <div class="value" style="color:var(--blue)">${allItems.filter(i => i.products?.gender === 'Niño').reduce((s,i) => s + i.quantity, 0)}</div>
+        <div class="value" style="color:var(--blue)">${genders['Niño']}</div>
         <div class="sub">prendas</div>
       </div>
     </div>
 
-    <div class="stats-grid">
-      <div class="stat-card" style="grid-column: span 2;">
+    <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
+      <div class="stat-card">
         <div class="label">Bordado</div>
-        <div style="display:flex;justify-content:space-between;align-items:baseline;">
-          <div class="value">${embPct}%</div>
-          <div class="sub">${embCompletedQty} / ${totalQty} prendas</div>
-        </div>
+        <div class="value">${embPct}%</div>
+        <div class="sub" style="text-align:right">${embEntregadoQty} / ${totalQty} prendas</div>
         <div class="progress-bar-container">
-          <div class="progress-bar-fill" style="width:${embPct}%;background:var(--primary)"></div>
+          <div class="progress-bar-fill" style="width:${embPct}%;background:var(--blue);"></div>
         </div>
-        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--text-light)">
-          <span>⚪ Sin asignar: ${embPending.length}</span>
-          <span>🔵 En bordado: ${embInProgress.length}</span>
-          <span>✅ Completado: ${embCompleted.length}</span>
-          <span>🔴 Corrección: ${embCorrection.length}</span>
+        <div class="sub" style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;">
+          <span>⚪ Sin asignar: ${embSinAsignar}</span>
+          <span>🟡 Pendiente: ${embPendiente}</span>
+          <span>🔵 En bordado: ${embEnBordado}</span>
+          <span>✅ Entregado: ${embEntregado}</span>
         </div>
       </div>
-      <div class="stat-card" style="grid-column: span 2;">
+      <div class="stat-card">
         <div class="label">Confección</div>
-        <div style="display:flex;justify-content:space-between;align-items:baseline;">
-          <div class="value">${sewPct}%</div>
-          <div class="sub">${sewCompletedQty} / ${totalQty} prendas</div>
-        </div>
+        <div class="value">${sewPct}%</div>
+        <div class="sub" style="text-align:right">${sewCompletedQty} / ${totalQty} prendas</div>
         <div class="progress-bar-container">
-          <div class="progress-bar-fill" style="width:${sewPct}%;background:var(--success)"></div>
+          <div class="progress-bar-fill" style="width:${sewPct}%;background:var(--success);"></div>
         </div>
-        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--text-light)">
-          <span>⚪ Pendiente: ${allItems.filter(i => i.sew_status === 'pendiente').length}</span>
+        <div class="sub" style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;">
+          <span>⚪ Pendiente: ${allItems.filter(i=>i.sew_status==='pendiente').length}</span>
           <span>🟡 Listo: ${sewReady.length}</span>
           <span>🔵 En confección: ${sewInProgress.length}</span>
           <span>✅ Completado: ${sewCompleted.length}</span>
@@ -468,18 +576,20 @@ function renderDashboard() {
     <div class="table-container"><div class="table-scroll">
       <table>
         <thead>
-          <tr><th>Colección</th><th>Género</th><th>Productos</th><th>Ítems</th><th>Prendas</th><th>Bordado</th><th>Confección</th></tr>
+          <tr>
+            <th>Colección</th><th>Género</th><th>Productos</th><th>Ítems</th><th>Prendas</th><th>Bordado</th><th>Confección</th>
+          </tr>
         </thead>
         <tbody>
           ${collections.map(col => {
             const colItems = allItems.filter(i => i.products?.collection === col);
-            const gender = colItems[0]?.products?.gender;
-            const colProducts = [...new Set(colItems.map(i => i.products?.code))].length;
             const colQty = colItems.reduce((s, i) => s + i.quantity, 0);
-            const colEmbDone = colItems.filter(i => i.emb_status === 'completado').reduce((s, i) => s + i.quantity, 0);
+            const colProducts = new Set(colItems.map(i => i.product_id)).size;
+            const gender = colItems[0]?.products?.gender || '';
+            const colEmbDone = colItems.filter(i => getItemBordadoInfo(i).status === 'entregado').reduce((s, i) => s + i.quantity, 0);
+            const colEmbPct = colQty > 0 ? Math.round((colEmbDone / colQty) * 100) : 0;
             const colSewDone = colItems.filter(i => i.sew_status === 'completado').reduce((s, i) => s + i.quantity, 0);
-            const embP = colQty > 0 ? Math.round((colEmbDone/colQty)*100) : 0;
-            const sewP = colQty > 0 ? Math.round((colSewDone/colQty)*100) : 0;
+            const colSewPct = colQty > 0 ? Math.round((colSewDone / colQty) * 100) : 0;
             return `<tr>
               <td><strong>${col}</strong></td>
               <td><span class="gender-badge gender-${gender === 'Niña' ? 'nina' : 'nino'}">${gender}</span></td>
@@ -488,14 +598,14 @@ function renderDashboard() {
               <td>${colQty}</td>
               <td>
                 <div style="display:flex;align-items:center;gap:8px;">
-                  <div class="progress-bar-container" style="width:80px;"><div class="progress-bar-fill" style="width:${embP}%;background:var(--primary)"></div></div>
-                  <span style="font-size:12px;">${embP}%</span>
+                  <div class="progress-bar-container" style="width:80px;"><div class="progress-bar-fill" style="width:${colEmbPct}%;background:var(--blue);"></div></div>
+                  <span style="font-size:12px">${colEmbPct}%</span>
                 </div>
               </td>
               <td>
                 <div style="display:flex;align-items:center;gap:8px;">
-                  <div class="progress-bar-container" style="width:80px;"><div class="progress-bar-fill" style="width:${sewP}%;background:var(--success)"></div></div>
-                  <span style="font-size:12px;">${sewP}%</span>
+                  <div class="progress-bar-container" style="width:80px;"><div class="progress-bar-fill" style="width:${colSewPct}%;background:var(--success);"></div></div>
+                  <span style="font-size:12px">${colSewPct}%</span>
                 </div>
               </td>
             </tr>`;
@@ -506,13 +616,11 @@ function renderDashboard() {
   `;
 }
 
-// ============================================================
-// BORDADO VIEW
-// ============================================================
+// === BORDADO VIEW ===
 function renderBordado() {
   const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
-  const statuses = ['sin_asignar', 'en_bordado', 'completado', 'correccion'];
-  const statusLabels = { sin_asignar: 'Sin asignar', en_bordado: 'En bordado', completado: 'Completado', correccion: 'Corrección' };
+  const statuses = ['sin_asignar', 'pendiente', 'en_bordado', 'entregado'];
+  const statusLabels = { sin_asignar: 'Sin asignar', pendiente: 'Pendiente', en_bordado: 'En bordado', entregado: 'Entregado' };
 
   let filtered = [...allItems];
   if (filters.search) {
@@ -521,17 +629,21 @@ function renderBordado() {
       i.products?.code?.toLowerCase().includes(s) ||
       i.products?.collection?.toLowerCase().includes(s) ||
       i.products?.garment?.toLowerCase().includes(s) ||
-      (i.embroiderer || '').toLowerCase().includes(s)
+      getItemBordadoInfo(i).bordadora.toLowerCase().includes(s)
     );
   }
   if (filters.gender) filtered = filtered.filter(i => i.products?.gender === filters.gender);
   if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
-  if (filters.status) filtered = filtered.filter(i => i.emb_status === filters.status);
+  if (filters.status) filtered = filtered.filter(i => getItemBordadoInfo(i).status === filters.status);
+
+  // Status counters
+  const counts = { sin_asignar: 0, pendiente: 0, en_bordado: 0, entregado: 0 };
+  filtered.forEach(i => { const s = getItemBordadoInfo(i).status; counts[s]++; });
 
   return `
     <h2 style="font-size:20px;margin-bottom:16px;">Control de Bordado</h2>
     <div class="filters">
-      <input class="filter-input" type="text" placeholder="Buscar código, colección..." id="filter-search" value="${filters.search}" style="width:220px;">
+      <input class="filter-input" type="text" placeholder="Buscar código, colección, bordadora..." id="filter-search" value="${filters.search}" style="width:260px;">
       <select class="filter-input" id="filter-gender">
         <option value="">Todos los géneros</option>
         <option value="Niña" ${filters.gender === 'Niña' ? 'selected' : ''}>Niña</option>
@@ -547,56 +659,227 @@ function renderBordado() {
       </select>
       <span style="font-size:13px;color:var(--text-light);">${filtered.length} ítems</span>
     </div>
+
+    <div style="margin-bottom:16px;" class="status-counters">
+      <span class="status-counter badge-sin_asignar">Sin asignar ${counts.sin_asignar}</span>
+      <span class="status-counter badge-pendiente">Pendiente ${counts.pendiente}</span>
+      <span class="status-counter badge-en_bordado">En bordado ${counts.en_bordado}</span>
+      <span class="status-counter badge-entregado">Entregado ${counts.entregado}</span>
+    </div>
+
     <div class="table-container"><div class="table-scroll">
       <table>
         <thead>
           <tr>
-            <th>Código</th><th>Colección</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th>
-            <th>Bordadora</th><th>Asignadas</th><th>F. Salida</th><th>F. Ret. Est.</th><th>F. Ret. Real</th><th>OK</th><th>Estado</th>
+            <th>Código</th><th>Colección</th><th>Prenda</th><th>Talla</th><th>Cant.</th>
+            <th>Asig.</th><th>Bordadora</th><th>Salida</th><th>Ret. Est.</th><th>Estado</th>
           </tr>
         </thead>
         <tbody>
-          ${filtered.map(item => `
-            <tr>
-              <td><strong>${item.products?.code || ''}</strong></td>
+          ${filtered.map(item => {
+            const info = getItemBordadoInfo(item);
+            const isExpanded = expandedItems.has(item.id);
+            const assignClass = info.totalAssigned >= item.quantity ? 'full' : (info.totalAssigned > 0 ? 'partial' : 'none');
+
+            let mainRow = `
+            <tr class="item-row ${isExpanded ? 'expanded' : ''}" onclick="toggleRow(${item.id})">
+              <td><span class="chevron">▶</span><strong>${item.products?.code || ''}</strong></td>
               <td>${item.products?.collection || ''}</td>
               <td>${item.products?.garment || ''}</td>
-              <td><span class="gender-badge gender-${item.products?.gender === 'Niña' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
               <td>${item.size}</td>
               <td><strong>${item.quantity}</strong></td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'embroiderer', 'text')">${item.embroiderer || '—'}</span>
+              <td><span class="assign-col ${assignClass}">${info.totalAssigned}/${item.quantity}</span></td>
+              <td>${info.bordadora === 'Varias' ? '<em style="color:var(--text-light)">Varias</em>' : (info.bordadora || '—')}</td>
+              <td>${info.assigns.length === 1 ? fmtDate(info.fechaSalida) : '—'}</td>
+              <td>${info.assigns.length === 1 ? fmtDate(info.fechaRetEst) : '—'}</td>
+              <td><span class="badge badge-${info.status}">${statusLabels[info.status]}</span></td>
+            </tr>`;
+
+            let subRow = `
+            <tr class="sub-row ${isExpanded ? 'visible' : ''}" id="sub-${item.id}">
+              <td colspan="10">
+                <div style="padding:8px 0 4px 20px;">
+                  <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text-light);letter-spacing:0.5px;margin-bottom:6px;">
+                    Asignaciones
+                  </div>
+                  ${info.assigns.length > 0 ? `
+                  <table class="sub-table">
+                    <thead>
+                      <tr><th>Bordadora</th><th>Cant.</th><th>Salida</th><th>Ret. Est.</th><th>Ret. Real</th><th>Estado</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                      ${info.assigns.map(a => `
+                      <tr>
+                        <td>
+                          <span class="editable" onclick="event.stopPropagation();editAssignField(this,${a.id},'bordadora','text')">${a.bordadora}</span>
+                        </td>
+                        <td>
+                          <span class="editable" onclick="event.stopPropagation();editAssignField(this,${a.id},'cantidad','number')">${a.cantidad}</span>
+                        </td>
+                        <td>
+                          <span class="editable" onclick="event.stopPropagation();editAssignField(this,${a.id},'fecha_salida','date')">${fmtDate(a.fecha_salida)}</span>
+                        </td>
+                        <td>
+                          <span class="editable" onclick="event.stopPropagation();editAssignField(this,${a.id},'fecha_retorno_est','date')">${fmtDate(a.fecha_retorno_est)}</span>
+                        </td>
+                        <td>
+                          <span class="editable" onclick="event.stopPropagation();editAssignField(this,${a.id},'fecha_retorno_real','date')">${fmtDate(a.fecha_retorno_real)}</span>
+                        </td>
+                        <td>
+                          <span class="editable" onclick="event.stopPropagation();editAssignStatus(this,${a.id},'${a.estado}')">
+                            <span class="badge badge-${a.estado}">${statusLabels[a.estado] || a.estado}</span>
+                          </span>
+                        </td>
+                        <td>
+                          <button class="btn-danger-small" onclick="event.stopPropagation();deleteAssignment(${a.id})">✕</button>
+                        </td>
+                      </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                  ` : '<div style="font-size:13px;color:var(--text-light);margin:4px 0;">Sin asignaciones todavía</div>'}
+                  ${info.pending > 0 ? `<div class="assign-alert">⚠ ${info.pending} unidad${info.pending > 1 ? 'es' : ''} sin asignar</div>` : ''}
+                  <div id="assign-form-${item.id}"></div>
+                  <div style="margin-top:8px;">
+                    <button class="btn-small" onclick="event.stopPropagation();showAssignForm(${item.id}, ${item.quantity - info.totalAssigned})">+ Nueva asignación</button>
+                  </div>
+                </div>
               </td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'emb_qty_assigned', 'number')">${item.emb_qty_assigned || 0}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_sent', 'date')">${item.emb_date_sent || '—'}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_expected', 'date')">${item.emb_date_expected || '—'}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_returned', 'date')">${item.emb_date_returned || '—'}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="toggleBool(${item.id}, 'emb_ok', ${item.emb_ok})">${item.emb_ok ? '✅' : '—'}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="editStatus(this, ${item.id}, 'emb_status', ['sin_asignar','en_bordado','completado','correccion'])"
-                ><span class="badge badge-${item.emb_status}">${statusLabels[item.emb_status] || item.emb_status}</span></span>
-              </td>
-            </tr>
-          `).join('')}
+            </tr>`;
+
+            return mainRow + subRow;
+          }).join('')}
         </tbody>
       </table>
     </div></div>
   `;
 }
 
-// ============================================================
-// CONFECCION VIEW
-// ============================================================
+function toggleRow(itemId) {
+  if (expandedItems.has(itemId)) {
+    expandedItems.delete(itemId);
+  } else {
+    expandedItems.add(itemId);
+  }
+  render();
+}
+
+function showAssignForm(itemId, maxQty) {
+  const container = document.getElementById(`assign-form-${itemId}`);
+  if (container.innerHTML) { container.innerHTML = ''; return; }
+  const suggestedQty = maxQty > 0 ? maxQty : 1;
+  container.innerHTML = `
+    <div class="assign-form" onclick="event.stopPropagation()">
+      <div><label>Bordadora</label><br><input type="text" id="af-bord-${itemId}" placeholder="Nombre" style="width:110px;"></div>
+      <div><label>Cantidad</label><br><input type="number" id="af-qty-${itemId}" value="${suggestedQty}" min="1" style="width:60px;"></div>
+      <div><label>F. Salida</label><br><input type="date" id="af-salida-${itemId}" style="width:130px;"></div>
+      <div><label>F. Ret. Est.</label><br><input type="date" id="af-ret-${itemId}" style="width:130px;"></div>
+      <div><label>Estado</label><br>
+        <select id="af-estado-${itemId}" style="width:110px;">
+          <option value="pendiente">Pendiente</option>
+          <option value="en_bordado">En bordado</option>
+        </select>
+      </div>
+      <div style="align-self:flex-end;">
+        <button class="btn-primary-small" onclick="event.stopPropagation();saveNewAssignment(${itemId})">Guardar</button>
+      </div>
+    </div>
+  `;
+  document.getElementById(`af-bord-${itemId}`).focus();
+}
+
+async function saveNewAssignment(itemId) {
+  const bordadora = document.getElementById(`af-bord-${itemId}`).value.trim();
+  const cantidad = parseInt(document.getElementById(`af-qty-${itemId}`).value) || 0;
+  const fecha_salida = document.getElementById(`af-salida-${itemId}`).value || null;
+  const fecha_retorno_est = document.getElementById(`af-ret-${itemId}`).value || null;
+  const estado = document.getElementById(`af-estado-${itemId}`).value;
+
+  if (!bordadora) { showToast('Ingresa el nombre de la bordadora', 'error'); return; }
+  if (cantidad <= 0) { showToast('La cantidad debe ser mayor a 0', 'error'); return; }
+
+  const { error } = await sb.from('bordado_assignments').insert({
+    production_item_id: itemId,
+    bordadora,
+    cantidad,
+    fecha_salida,
+    fecha_retorno_est,
+    estado
+  });
+
+  if (error) {
+    showToast('Error al guardar: ' + error.message, 'error');
+    console.error(error);
+  } else {
+    showToast('Asignación creada');
+    await loadData();
+    render();
+  }
+}
+
+async function editAssignField(el, assignId, field, type) {
+  if (el.querySelector('input')) return;
+  event.stopPropagation();
+  const assign = allAssignments.find(a => a.id === assignId);
+  const currentVal = assign ? assign[field] : '';
+  const display = (currentVal === null || currentVal === undefined) ? '' : currentVal;
+
+  el.innerHTML = `<input type="${type}" value="${display}"
+    onclick="event.stopPropagation()"
+    onblur="saveAssignField(this, ${assignId}, '${field}')"
+    onkeydown="event.stopPropagation();if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.dataset.cancel='1';this.blur()}"
+    style="width:${type === 'date' ? '130px' : (type === 'number' ? '50px' : '100px')}"
+  >`;
+  el.querySelector('input').focus();
+}
+
+async function saveAssignField(input, assignId, field) {
+  if (input.dataset.cancel) { render(); return; }
+
+  let value = input.value.trim();
+  if (value === '') value = null;
+  if (field === 'cantidad') value = value ? parseInt(value) : 1;
+
+  const { error } = await sb.from('bordado_assignments').update({ [field]: value }).eq('id', assignId);
+  if (error) {
+    showToast('Error al guardar', 'error');
+    console.error(error);
+  } else {
+    showToast('Guardado');
+    const assign = allAssignments.find(a => a.id === assignId);
+    if (assign) assign[field] = value;
+  }
+  render();
+}
+
+async function editAssignStatus(el, assignId, currentStatus) {
+  if (el.querySelector('select')) return;
+  event.stopPropagation();
+  const options = ['pendiente', 'en_bordado', 'entregado'];
+  const labels = { pendiente: 'Pendiente', en_bordado: 'En bordado', entregado: 'Entregado' };
+
+  el.innerHTML = `<select
+    onclick="event.stopPropagation()"
+    onchange="saveAssignField(this, ${assignId}, 'estado')"
+    onblur="saveAssignField(this, ${assignId}, 'estado')">
+    ${options.map(o => `<option value="${o}" ${o === currentStatus ? 'selected' : ''}>${labels[o]}</option>`).join('')}
+  </select>`;
+  el.querySelector('select').focus();
+}
+
+async function deleteAssignment(assignId) {
+  if (!confirm('¿Eliminar esta asignación?')) return;
+  const { error } = await sb.from('bordado_assignments').delete().eq('id', assignId);
+  if (error) {
+    showToast('Error al eliminar', 'error');
+  } else {
+    showToast('Asignación eliminada');
+    await loadData();
+    render();
+  }
+}
+
+// === CONFECCION VIEW ===
 function renderConfeccion() {
   const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
   const statuses = ['pendiente', 'listo_para_confeccion', 'en_confeccion', 'completado'];
@@ -638,12 +921,15 @@ function renderConfeccion() {
       <table>
         <thead>
           <tr>
-            <th>Código</th><th>Colección</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th><th>OK Bordado</th>
+            <th>Código</th><th>Colección</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th><th>Bordado OK</th>
             <th>Tipo</th><th>Asignadas</th><th>F. Inicio</th><th>F. Ent. Est.</th><th>F. Ent. Real</th><th>OK</th><th>Estado</th>
           </tr>
         </thead>
         <tbody>
-          ${filtered.map(item => `
+          ${filtered.map(item => {
+            const embInfo = getItemBordadoInfo(item);
+            const embOk = embInfo.status === 'entregado';
+            return `
             <tr>
               <td><strong>${item.products?.code || ''}</strong></td>
               <td>${item.products?.collection || ''}</td>
@@ -651,7 +937,7 @@ function renderConfeccion() {
               <td><span class="gender-badge gender-${item.products?.gender === 'Niña' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
               <td>${item.size}</td>
               <td><strong>${item.quantity}</strong></td>
-              <td>${item.emb_ok ? '✅' : '⬜'}</td>
+              <td>${embOk ? '✅' : '⬜'}</td>
               <td>
                 <span class="editable" onclick="editField(this, ${item.id}, 'sewing_type', 'text')">${item.sewing_type || '—'}</span>
               </td>
@@ -674,17 +960,15 @@ function renderConfeccion() {
                 <span class="editable" onclick="editStatus(this, ${item.id}, 'sew_status', ['pendiente','listo_para_confeccion','en_confeccion','completado'])"
                 ><span class="badge badge-${item.sew_status}">${statusLabels[item.sew_status] || item.sew_status}</span></span>
               </td>
-            </tr>
-          `).join('')}
+            </tr>`;
+          }).join('')}
         </tbody>
       </table>
     </div></div>
   `;
 }
 
-// ============================================================
-// PRODUCTOS VIEW
-// ============================================================
+// === PRODUCTOS VIEW ===
 function renderProductos() {
   return `
     <h2 style="font-size:20px;margin-bottom:16px;">Catálogo de Productos</h2>
@@ -718,14 +1002,11 @@ function renderProductos() {
   `;
 }
 
-// ============================================================
-// INLINE EDITING
-// ============================================================
+// === INLINE EDITING (production_items) ===
 async function editField(el, itemId, field, type) {
   if (el.querySelector('input')) return;
   const currentVal = el.textContent.trim();
   const display = currentVal === '—' ? '' : currentVal;
-
   el.innerHTML = `<input type="${type}" value="${display}"
     onblur="saveField(this, ${itemId}, '${field}')"
     onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.dataset.cancel='1';this.blur()}"
@@ -734,24 +1015,17 @@ async function editField(el, itemId, field, type) {
 }
 
 async function saveField(input, itemId, field) {
-  if (input.dataset.cancel) {
-    await loadData();
-    render();
-    return;
-  }
-
+  if (input.dataset.cancel) { await loadData(); render(); return; }
   let value = input.value.trim();
   if (value === '') value = null;
   if (field.includes('qty') || field.includes('assigned')) value = value ? parseInt(value) : 0;
 
   const { error } = await sb.from('production_items').update({ [field]: value }).eq('id', itemId);
-
   if (error) {
     showToast('Error al guardar', 'error');
     console.error(error);
   } else {
     showToast('Guardado');
-    // Update local data
     const item = allItems.find(i => i.id === itemId);
     if (item) item[field] = value;
   }
@@ -762,7 +1036,7 @@ async function editStatus(el, itemId, field, options) {
   if (el.querySelector('select')) return;
   const labels = {
     sin_asignar: 'Sin asignar', en_bordado: 'En bordado', completado: 'Completado', correccion: 'Corrección',
-    pendiente: 'Pendiente', listo_para_confeccion: 'Listo para confección', en_confeccion: 'En confección'
+    pendiente: 'Pendiente', listo_para_confeccion: 'Listo para confección', en_confeccion: 'En confección', entregado: 'Entregado'
   };
   const item = allItems.find(i => i.id === itemId);
   const current = item ? item[field] : '';
@@ -786,36 +1060,23 @@ async function toggleBool(itemId, field, currentVal) {
   render();
 }
 
-// ============================================================
-// FILTERS LISTENERS
-// ============================================================
+// === FILTER LISTENERS ===
 function attachListeners() {
   const searchEl = document.getElementById('filter-search');
   const genderEl = document.getElementById('filter-gender');
   const collectionEl = document.getElementById('filter-collection');
   const statusEl = document.getElementById('filter-status');
 
-  if (searchEl) {
-    searchEl.addEventListener('input', (e) => { filters.search = e.target.value; render(); });
-  }
-  if (genderEl) {
-    genderEl.addEventListener('change', (e) => { filters.gender = e.target.value; render(); });
-  }
-  if (collectionEl) {
-    collectionEl.addEventListener('change', (e) => { filters.collection = e.target.value; render(); });
-  }
-  if (statusEl) {
-    statusEl.addEventListener('change', (e) => { filters.status = e.target.value; render(); });
-  }
+  if (searchEl) searchEl.addEventListener('input', (e) => { filters.search = e.target.value; render(); });
+  if (genderEl) genderEl.addEventListener('change', (e) => { filters.gender = e.target.value; render(); });
+  if (collectionEl) collectionEl.addEventListener('change', (e) => { filters.collection = e.target.value; render(); });
+  if (statusEl) statusEl.addEventListener('change', (e) => { filters.status = e.target.value; render(); });
 }
 
-// ============================================================
-// TOAST NOTIFICATIONS
-// ============================================================
+// === TOAST ===
 function showToast(message, type = 'success') {
   const existing = document.querySelector('.toast');
   if (existing) existing.remove();
-
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
@@ -823,9 +1084,7 @@ function showToast(message, type = 'success') {
   setTimeout(() => toast.remove(), 2500);
 }
 
-// ============================================================
-// START
-// ============================================================
+// === START ===
 init();
 </script>
 </body>
