@@ -594,8 +594,9 @@ function getItemShipmentAllocations(item) {
   // Remainder goes to the lowest-priority shipment that has no explicit allocation
   const remainder = item.quantity - allocated;
   if (remainder > 0) {
-    // Find the shipment with no explicit items for this item (highest priority number = lowest priority)
-    const remainderShip = sorted.find(s => !allShipmentItems.some(si => si.production_item_id === item.id && si.shipment_id === s.id));
+    // Remainder goes to the LAST priority shipment (UK) — not the first
+    const candidates = sorted.filter(s => !allShipmentItems.some(si => si.production_item_id === item.id && si.shipment_id === s.id));
+    const remainderShip = candidates.length > 0 ? candidates[candidates.length - 1] : null;
     if (remainderShip) {
       allocations.push({ shipment: remainderShip, qty: remainder });
     }
