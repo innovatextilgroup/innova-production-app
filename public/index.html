@@ -1,4 +1,4 @@
-h<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -363,6 +363,79 @@ h<!DOCTYPE html>
     .assign-col.full { color: var(--success); }
     .assign-col.partial { color: var(--warning); }
     .assign-col.none { color: var(--neutral); }
+
+    .shipment-tag {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      margin-left: 4px;
+    }
+    .shipment-tag-ir { background: #dcfce7; color: #166534; }
+    .shipment-tag-uk { background: #dbeafe; color: #1e40af; }
+
+    .shipment-section {
+      margin: 24px 0;
+    }
+    .shipment-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+    }
+    .shipment-card .shipment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .shipment-card .shipment-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .shipment-card .shipment-deadline {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    .shipment-progress-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .shipment-progress-label {
+      font-size: 12px;
+      color: var(--text-light);
+      min-width: 70px;
+    }
+    .shipment-progress-bar {
+      flex: 1;
+      background: var(--neutral-light);
+      border-radius: 8px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .shipment-progress-fill {
+      height: 100%;
+      border-radius: 8px;
+      transition: width 0.5s ease;
+    }
+    .shipment-progress-pct {
+      font-size: 13px;
+      font-weight: 600;
+      min-width: 40px;
+      text-align: right;
+    }
+    .shipment-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-light);
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -398,12 +471,14 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let allItems = [];
 let products = [];
 let allAssignments = [];
+let allShipments = [];
+let allShipmentItems = [];
 let currentTab = 'dashboard';
-let filters = { search: '', gender: '', collection: '', status: '' };
+let filters = { search: '', gender: '', collection: '', status: '', shipment: '' };
 let expandedItems = new Set();
 
 async function init() {
-    setupTabs();
+  setupTabs();
   calculateDeadline();
   await loadData();
   render();
@@ -418,16 +493,20 @@ function calculateDeadline() {
 }
 
 async function loadData() {
-  const [itemsRes, productsRes, assignRes] = await Promise.all([
+  const [itemsRes, productsRes, assignRes, shipmentsRes, shipItemsRes] = await Promise.all([
     sb.from('production_items').select('*, products(*)').order('id'),
     sb.from('products').select('*').order('collection'),
-    sb.from('bordado_assignments').select('*').order('created_at')
+    sb.from('bordado_assignments').select('*').order('created_at'),
+    sb.from('shipments').select('*').order('priority'),
+    sb.from('shipment_items').select('*')
   ]);
 
   if (itemsRes.error) { console.error(itemsRes.error); return; }
   allItems = itemsRes.data || [];
   products = productsRes.data || [];
   allAssignments = assignRes.data || [];
+  allShipments = shipmentsRes.data || [];
+  allShipmentItems = shipItemsRes.data || [];
 }
 
 function setupTabs() {
@@ -436,7 +515,7 @@ function setupTabs() {
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentTab = tab.dataset.tab;
-      filters = { search: '', gender: '', collection: '', status: '' };
+      filters = { search: '', gender: '', collection: '', status: '', shipment: '' };
       render();
     });
   });
@@ -488,6 +567,123 @@ function fmtDate(d) {
   if (!d) return '—';
   const dt = new Date(d + 'T00:00:00');
   return dt.toLocaleDateString('es', { day: '2-digit', month: 'short' });
+}
+
+// === SHIPMENT HELPERS ===
+// Get the quantity allocated to a specific shipment for a production_item
+function getShipmentQty(itemId, shipmentId) {
+  const si = allShipmentItems.find(s => s.production_item_id === itemId && s.shipment_id === shipmentId);
+  return si ? si.quantity : 0;
+}
+
+// Get all shipment allocations for an item: [{shipment, qty}]
+function getItemShipmentAllocations(item) {
+  // Sort shipments by priority
+  const sorted = [...allShipments].sort((a, b) => a.priority - b.priority);
+  const allocations = [];
+  let allocated = 0;
+
+  for (const ship of sorted) {
+    const explicitQty = getShipmentQty(item.id, ship.id);
+    if (explicitQty > 0) {
+      allocations.push({ shipment: ship, qty: explicitQty });
+      allocated += explicitQty;
+    }
+  }
+
+  // Remainder goes to the lowest-priority shipment that has no explicit allocation
+  const remainder = item.quantity - allocated;
+  if (remainder > 0) {
+    // Find the shipment with no explicit items for this item (highest priority number = lowest priority)
+    const remainderShip = sorted.find(s => !allShipmentItems.some(si => si.production_item_id === item.id && si.shipment_id === s.id));
+    if (remainderShip) {
+      allocations.push({ shipment: remainderShip, qty: remainder });
+    }
+  }
+
+  return allocations;
+}
+
+// Calculate shipment progress using priority-based auto-fill
+// For bordado: units with status entregado fill highest-priority shipment first
+function getShipmentBordadoProgress(shipment) {
+  let totalNeeded = 0;
+  let totalDone = 0;
+
+  allItems.forEach(item => {
+    const allocations = getItemShipmentAllocations(item);
+    const alloc = allocations.find(a => a.shipment.id === shipment.id);
+    if (!alloc || alloc.qty === 0) return;
+
+    totalNeeded += alloc.qty;
+
+    // Calculate how many units of this item have bordado entregado
+    const info = getItemBordadoInfo(item);
+    const entregadoQty = info.assigns
+      .filter(a => a.estado === 'entregado')
+      .reduce((s, a) => s + a.cantidad, 0);
+
+    // Priority-based fill: higher priority shipments eat first
+    const sortedAllocs = allocations.sort((a, b) => a.shipment.priority - b.shipment.priority);
+    let remaining = entregadoQty;
+    for (const sa of sortedAllocs) {
+      if (sa.shipment.id === shipment.id) {
+        totalDone += Math.min(remaining, sa.qty);
+        break;
+      }
+      remaining -= Math.min(remaining, sa.qty);
+      if (remaining <= 0) break;
+    }
+  });
+
+  return { totalNeeded, totalDone, pct: totalNeeded > 0 ? Math.round((totalDone / totalNeeded) * 100) : 0 };
+}
+
+// Calculate confección progress for a shipment (priority-based)
+function getShipmentConfeccionProgress(shipment) {
+  let totalNeeded = 0;
+  let totalDone = 0;
+
+  allItems.forEach(item => {
+    const allocations = getItemShipmentAllocations(item);
+    const alloc = allocations.find(a => a.shipment.id === shipment.id);
+    if (!alloc || alloc.qty === 0) return;
+
+    totalNeeded += alloc.qty;
+
+    // For confección, use sew_status === 'completado' and sew_ok
+    if (item.sew_status === 'completado' && item.sew_ok) {
+      // All units of this item are done — fill by priority
+      const sortedAllocs = allocations.sort((a, b) => a.shipment.priority - b.shipment.priority);
+      let remaining = item.quantity;
+      for (const sa of sortedAllocs) {
+        if (sa.shipment.id === shipment.id) {
+          totalDone += Math.min(remaining, sa.qty);
+          break;
+        }
+        remaining -= Math.min(remaining, sa.qty);
+        if (remaining <= 0) break;
+      }
+    }
+  });
+
+  return { totalNeeded, totalDone, pct: totalNeeded > 0 ? Math.round((totalDone / totalNeeded) * 100) : 0 };
+}
+
+// Get shipment tags HTML for a production item
+function getShipmentTags(item) {
+  const allocations = getItemShipmentAllocations(item);
+  return allocations.map(a => {
+    const code = a.shipment.destination === 'Irlanda' ? 'IR' : 'UK';
+    const cls = code === 'IR' ? 'shipment-tag-ir' : 'shipment-tag-uk';
+    return `<span class="shipment-tag ${cls}" title="${a.shipment.name}: ${a.qty} uds">${code}:${a.qty}</span>`;
+  }).join('');
+}
+
+// Check if an item belongs to a specific shipment
+function itemBelongsToShipment(item, shipmentId) {
+  const allocations = getItemShipmentAllocations(item);
+  return allocations.some(a => a.shipment.id === parseInt(shipmentId) && a.qty > 0);
 }
 
 // === DASHBOARD ===
@@ -573,6 +769,50 @@ function renderDashboard() {
       </div>
     </div>
 
+    ${allShipments.length > 0 ? `
+    <div class="shipment-section">
+      <h3 style="font-size:16px;margin-bottom:12px;">Por Envío</h3>
+      ${allShipments.map(ship => {
+        const bordProgress = getShipmentBordadoProgress(ship);
+        const confProgress = getShipmentConfeccionProgress(ship);
+        const deadlineDate = new Date(ship.deadline + 'T00:00:00');
+        const today = new Date();
+        const daysLeft = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
+        const daysText = daysLeft > 0 ? daysLeft + ' días' : 'Vencido';
+        const daysColor = daysLeft <= 7 ? 'var(--danger)' : (daysLeft <= 14 ? 'var(--warning)' : 'var(--text-light)');
+        const flagEmoji = ship.destination === 'Irlanda' ? '🇮🇪' : '🇬🇧';
+        return `
+        <div class="shipment-card">
+          <div class="shipment-header">
+            <div class="shipment-title">${flagEmoji} ${ship.name}</div>
+            <div class="shipment-deadline">
+              Deadline: <strong>${deadlineDate.toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' })}</strong>
+              — <span style="color:${daysColor};font-weight:600;">${daysText}</span>
+            </div>
+          </div>
+          <div class="shipment-progress-row">
+            <span class="shipment-progress-label">Bordado</span>
+            <div class="shipment-progress-bar">
+              <div class="shipment-progress-fill" style="width:${bordProgress.pct}%;background:var(--blue);"></div>
+            </div>
+            <span class="shipment-progress-pct">${bordProgress.pct}%</span>
+          </div>
+          <div class="shipment-progress-row">
+            <span class="shipment-progress-label">Confección</span>
+            <div class="shipment-progress-bar">
+              <div class="shipment-progress-fill" style="width:${confProgress.pct}%;background:var(--success);"></div>
+            </div>
+            <span class="shipment-progress-pct">${confProgress.pct}%</span>
+          </div>
+          <div class="shipment-stats">
+            <span>Bordado: ${bordProgress.totalDone}/${bordProgress.totalNeeded} prendas</span>
+            <span>Confección: ${confProgress.totalDone}/${confProgress.totalNeeded} prendas</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    ` : ''}
+
     <h3 style="font-size:16px;margin:24px 0 12px;">Por Colección</h3>
     <div class="table-container"><div class="table-scroll">
       <table>
@@ -636,6 +876,7 @@ function renderBordado() {
   if (filters.gender) filtered = filtered.filter(i => i.products?.gender === filters.gender);
   if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
   if (filters.status) filtered = filtered.filter(i => getItemBordadoInfo(i).status === filters.status);
+  if (filters.shipment) filtered = filtered.filter(i => itemBelongsToShipment(i, filters.shipment));
 
   // Status counters
   const counts = { sin_asignar: 0, pendiente: 0, en_bordado: 0, entregado: 0 };
@@ -658,6 +899,12 @@ function renderBordado() {
         <option value="">Todos los estados</option>
         ${statuses.map(s => `<option value="${s}" ${filters.status === s ? 'selected' : ''}>${statusLabels[s]}</option>`).join('')}
       </select>
+      ${allShipments.length > 0 ? `
+      <select class="filter-input" id="filter-shipment">
+        <option value="">Todos los envíos</option>
+        ${allShipments.map(s => `<option value="${s.id}" ${filters.shipment == s.id ? 'selected' : ''}>${s.destination === 'Irlanda' ? '🇮🇪' : '🇬🇧'} ${s.name}</option>`).join('')}
+      </select>
+      ` : ''}
       <span style="font-size:13px;color:var(--text-light);">${filtered.length} ítems</span>
     </div>
 
@@ -672,7 +919,7 @@ function renderBordado() {
       <table>
         <thead>
           <tr>
-            <th>Código</th><th>Colección</th><th>Prenda</th><th>Talla</th><th>Cant.</th>
+            <th>Código</th><th>Colección</th><th>Prenda</th><th>Talla</th><th>Cant.</th><th>Envío</th>
             <th>Asig.</th><th>Bordadora</th><th>Salida</th><th>Ret. Est.</th><th>Estado</th>
           </tr>
         </thead>
@@ -689,6 +936,7 @@ function renderBordado() {
               <td>${item.products?.garment || ''}</td>
               <td>${item.size}</td>
               <td><strong>${item.quantity}</strong></td>
+              <td>${getShipmentTags(item)}</td>
               <td><span class="assign-col ${assignClass}">${info.totalAssigned}/${item.quantity}</span></td>
               <td>${info.bordadora === 'Varias' ? '<em style="color:var(--text-light)">Varias</em>' : (info.bordadora || '—')}</td>
               <td>${info.assigns.length === 1 ? fmtDate(info.fechaSalida) : '—'}</td>
@@ -698,7 +946,7 @@ function renderBordado() {
 
             let subRow = `
             <tr class="sub-row ${isExpanded ? 'visible' : ''}" id="sub-${item.id}">
-              <td colspan="10">
+              <td colspan="11">
                 <div style="padding:8px 0 4px 20px;">
                   <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text-light);letter-spacing:0.5px;margin-bottom:6px;">
                     Asignaciones
@@ -898,6 +1146,7 @@ function renderConfeccion() {
   if (filters.gender) filtered = filtered.filter(i => i.products?.gender === filters.gender);
   if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
   if (filters.status) filtered = filtered.filter(i => i.sew_status === filters.status);
+  if (filters.shipment) filtered = filtered.filter(i => itemBelongsToShipment(i, filters.shipment));
 
   return `
     <h2 style="font-size:20px;margin-bottom:16px;">Control de Confección</h2>
@@ -916,13 +1165,19 @@ function renderConfeccion() {
         <option value="">Todos los estados</option>
         ${statuses.map(s => `<option value="${s}" ${filters.status === s ? 'selected' : ''}>${statusLabels[s]}</option>`).join('')}
       </select>
+      ${allShipments.length > 0 ? `
+      <select class="filter-input" id="filter-shipment">
+        <option value="">Todos los envíos</option>
+        ${allShipments.map(s => `<option value="${s.id}" ${filters.shipment == s.id ? 'selected' : ''}>${s.destination === 'Irlanda' ? '🇮🇪' : '🇬🇧'} ${s.name}</option>`).join('')}
+      </select>
+      ` : ''}
       <span style="font-size:13px;color:var(--text-light);">${filtered.length} ítems</span>
     </div>
     <div class="table-container"><div class="table-scroll">
       <table>
         <thead>
           <tr>
-            <th>Código</th><th>Colección</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th><th>Bordado OK</th>
+            <th>Código</th><th>Colección</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th><th>Envío</th><th>Bordado OK</th>
             <th>Tipo</th><th>Asignadas</th><th>F. Inicio</th><th>F. Ent. Est.</th><th>F. Ent. Real</th><th>OK</th><th>Estado</th>
           </tr>
         </thead>
@@ -938,6 +1193,7 @@ function renderConfeccion() {
               <td><span class="gender-badge gender-${item.products?.gender === 'Niña' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
               <td>${item.size}</td>
               <td><strong>${item.quantity}</strong></td>
+              <td>${getShipmentTags(item)}</td>
               <td>${embOk ? '✅' : '⬜'}</td>
               <td>
                 <span class="editable" onclick="editField(this, ${item.id}, 'sewing_type', 'text')">${item.sewing_type || '—'}</span>
@@ -1067,11 +1323,13 @@ function attachListeners() {
   const genderEl = document.getElementById('filter-gender');
   const collectionEl = document.getElementById('filter-collection');
   const statusEl = document.getElementById('filter-status');
+  const shipmentEl = document.getElementById('filter-shipment');
 
   if (searchEl) searchEl.addEventListener('input', (e) => { filters.search = e.target.value; render(); });
   if (genderEl) genderEl.addEventListener('change', (e) => { filters.gender = e.target.value; render(); });
   if (collectionEl) collectionEl.addEventListener('change', (e) => { filters.collection = e.target.value; render(); });
   if (statusEl) statusEl.addEventListener('change', (e) => { filters.status = e.target.value; render(); });
+  if (shipmentEl) shipmentEl.addEventListener('change', (e) => { filters.shipment = e.target.value; render(); });
 }
 
 // === TOAST ===
