@@ -310,7 +310,7 @@
 // ============================================================
 const SUPABASE_URL = 'https://rtnvpriddrizwelgxxcl.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0bnZwcmlkZHJpendlbGd4eGNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NTQxNDksImV4cCI6MjA5NTMzMDE0OX0.fTodjktkbane5Vk-U7vg3XToXTsNZCeCk7bfCj-X31I';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ============================================================
 // STATE
@@ -345,14 +345,23 @@ function calculateDeadline() {
 }
 
 async function loadData() {
-  const [itemsRes, productsRes] = await Promise.all([
-    supabase.from('production_items').select('*, products(*)').order('id'),
-    supabase.from('products').select('*').order('collection')
+  const [itemsRes, productsRes, assignRes, shipmentsRes, shipItemsRes, workersRes, guiasRes, guiaItemsRes] = await Promise.all([
+    sb.from('production_items').select('*, products(*)').order('id'),
+    sb.from('products').select('*').order('collection'),
+    sb.from('bordado_assignments').select('*').order('created_at'),
+    sb.from('shipments').select('*').order('priority'),
+    sb.from('shipment_items').select('*'),
+    sb.from('workers').select('*').order('name'),
+    sb.from('guias').select('*').order('created_at', { ascending: false }),
+    sb.from('guia_items').select('*, production_items(*, products(*))').order('id')
   ]);
 
   if (itemsRes.error) { console.error(itemsRes.error); return; }
   allItems = itemsRes.data || [];
   products = productsRes.data || [];
+  workers = workersRes.data || [];
+  guias = guiasRes.data || [];
+  guiaItems = guiaItemsRes.data || [];
 }
 
 function setupTabs() {
@@ -1407,7 +1416,7 @@ async function saveField(input, itemId, field) {
   if (value === '') value = null;
   if (field.includes('qty') || field.includes('assigned')) value = value ? parseInt(value) : 0;
 
-  const { error } = await supabase.from('production_items').update({ [field]: value }).eq('id', itemId);
+  const { error } = await sb.from('production_items').update({ [field]: value }).eq('id', itemId);
 
   if (error) {
     showToast('Error al guardar', 'error');
@@ -1438,7 +1447,7 @@ async function editStatus(el, itemId, field, options) {
 
 async function toggleBool(itemId, field, currentVal) {
   const newVal = !currentVal;
-  const { error } = await supabase.from('production_items').update({ [field]: newVal }).eq('id', itemId);
+  const { error } = await sb.from('production_items').update({ [field]: newVal }).eq('id', itemId);
   if (error) {
     showToast('Error al guardar', 'error');
   } else {
