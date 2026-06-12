@@ -965,7 +965,7 @@ function renderGuiaDetail() {
   // Items table
   html += `<div class="table-container"><div class="table-scroll"><table>
     <thead><tr>
-      <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Talla</th><th>Enviadas</th>
+      <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Talla</th><th>Enviadas</th>
       <th style="color:var(--success)">✓ OK</th>
       <th style="color:var(--warning)">↻ Corrección</th>
       <th style="color:var(--danger)">✕ Descuento</th>
@@ -979,6 +979,7 @@ function renderGuiaDetail() {
       <td>${p.collection || ''}</td>
       <td>${p.garment || ''}</td>
       <td>${p.fabric || '—'}</td>
+      <td>${p.color || '—'}</td>
       <td>${pi.size || ''}</td>
       <td>${gi.qty_sent}</td>
       <td>${isActive ? `<input type="number" class="filter-input return-ok" data-gi-id="${gi.id}" min="0" max="${gi.qty_sent}" value="${gi.qty_returned_ok || 0}" style="width:60px;text-align:center;" />` : gi.qty_returned_ok || 0}</td>
@@ -1105,7 +1106,7 @@ function renderGuiaEdit() {
   html += `<div class="table-container"><div class="table-scroll"><table>
     <thead><tr>
       <th style="width:36px"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" ${selectedPIIds.size === filtered.length && filtered.length > 0 ? 'checked' : ''} /></th>
-      <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Talla</th><th>Disponible</th><th>En guía</th>
+      <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Talla</th><th>Disponible</th><th>En guía</th>
     </tr></thead><tbody>`;
 
   filtered.forEach(pi => {
@@ -1122,6 +1123,7 @@ function renderGuiaEdit() {
       <td>${p.collection || ''}</td>
       <td>${p.garment || ''}</td>
       <td>${p.fabric || '—'}</td>
+      <td>${p.color || '—'}</td>
       <td>${pi.size}</td>
       <td><strong>${avail}</strong></td>
       <td>${isInGuia ? `<span class="badge badge-en_bordado">${gi.qty_sent} enviadas</span>` : ''}</td>
@@ -1155,7 +1157,7 @@ function renderGuiaEditStep2() {
   html += `<p style="color:var(--text-light);font-size:14px;margin-bottom:16px;">${guiaType === 'bordado' ? 'Bordadora' : 'Costurera'}: <strong>${worker?.name || '—'}</strong> · Notas: ${g.notes || '—'}</p>`;
 
   html += `<div class="table-container"><div class="table-scroll"><table>
-    <thead><tr><th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Talla</th><th>Disponible</th><th>Cantidad</th><th>Precio S/</th><th>Acción</th></tr></thead><tbody>`;
+    <thead><tr><th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Talla</th><th>Disponible</th><th>Cantidad</th><th>Precio S/</th><th>Acción</th></tr></thead><tbody>`;
 
   [...selectedPIIds].forEach(piId => {
     const pi = allItems.find(i => i.id === piId);
@@ -1172,6 +1174,7 @@ function renderGuiaEditStep2() {
       <td>${p.collection || ''}</td>
       <td>${p.garment || ''}</td>
       <td>${p.fabric || '—'}</td>
+      <td>${p.color || '—'}</td>
       <td>${pi.size}</td>
       <td>${maxQty}</td>
       <td><input type="number" class="filter-input guia-edit-qty" data-pi-id="${piId}" min="1" max="${maxQty}" value="${currentQty}" style="width:70px;text-align:center;" ${hasReturns ? `min="${(existingGI.qty_returned_ok||0)+(existingGI.qty_correction||0)+(existingGI.qty_discount||0)}"` : ''} /></td>
@@ -1497,6 +1500,18 @@ function getGuiaInfoForItem(piId, type) {
 
 function formatDateSafe(d) { return d ? new Date(d + 'T12:00:00').toLocaleDateString('es') : '—'; }
 
+function getItemDestino(piId) {
+  const matches = shipmentItems.filter(si => si.production_item_id === piId);
+  if (matches.length === 0) return '<span style="color:var(--text-light);font-size:12px;">—</span>';
+  return matches.map(si => {
+    const s = shipments.find(sh => sh.id === si.shipment_id);
+    if (!s) return '';
+    const label = s.destination === 'Irlanda' ? 'IR' : 'UK';
+    const color = s.destination === 'Irlanda' ? 'background:#e8f5e9;color:#2e7d32;' : 'background:#e3f2fd;color:#1565c0;';
+    return `<span style="${color}padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600;" title="${s.destination}: ${si.quantity} pzas">${label}:${si.quantity}</span>`;
+  }).join(' ');
+}
+
 function renderBordado() {
   const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
   const statuses = ['sin_asignar', 'en_bordado', 'completado', 'correccion'];
@@ -1556,20 +1571,24 @@ function renderBordado() {
       <table>
         <thead>
           <tr>
-            <th>Código</th><th>Colección</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th>
+            <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Género</th><th>Talla</th><th>Cant.</th><th>Destino</th>
             <th>Guía</th><th>Bordadora</th><th>Enviadas</th><th>F. Salida</th><th>F. Ret. Est.</th><th>OK</th><th>Correc.</th><th>Estado</th>
           </tr>
         </thead>
         <tbody>
           ${filtered.map(item => {
             const e = item._emb;
+            const dest = getItemDestino(item.id);
             return `<tr>
               <td><strong>${item.products?.code || ''}</strong></td>
               <td>${item.products?.collection || ''}</td>
               <td>${item.products?.garment || ''}</td>
+              <td>${item.products?.fabric || '—'}</td>
+              <td>${item.products?.color || '—'}</td>
               <td><span class="gender-badge gender-${item.products?.gender === 'Niña' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
               <td>${item.size}</td>
               <td><strong>${item.quantity}</strong></td>
+              <td>${dest}</td>
               <td style="font-size:12px;">${e.guiaNumbers.join(', ') || '—'}</td>
               <td>${e.worker}</td>
               <td>${e.qtySent || '—'}</td>
@@ -1649,7 +1668,7 @@ function renderConfeccion() {
       <table>
         <thead>
           <tr>
-            <th>Código</th><th>Colección</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th>
+            <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Género</th><th>Talla</th><th>Cant.</th><th>Destino</th>
             <th>Bordado</th><th>Guía</th><th>Costurera</th><th>Enviadas</th><th>F. Salida</th><th>F. Ret. Est.</th><th>OK</th><th>Correc.</th><th>Estado</th>
           </tr>
         </thead>
@@ -1658,13 +1677,17 @@ function renderConfeccion() {
             const emb = item._emb;
             const sew = item._sew;
             const embBadge = emb.status === 'completado' ? '✅' : emb.status === 'en_bordado' ? '🔄' : emb.status === 'correccion' ? '⚠️' : '⬜';
+            const dest = getItemDestino(item.id);
             return `<tr>
               <td><strong>${item.products?.code || ''}</strong></td>
               <td>${item.products?.collection || ''}</td>
               <td>${item.products?.garment || ''}</td>
+              <td>${item.products?.fabric || '—'}</td>
+              <td>${item.products?.color || '—'}</td>
               <td><span class="gender-badge gender-${item.products?.gender === 'Niña' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
               <td>${item.size}</td>
               <td><strong>${item.quantity}</strong></td>
+              <td>${dest}</td>
               <td title="Bordado: ${emb.qtyOk} OK / ${emb.qtySent} enviadas">${embBadge}</td>
               <td style="font-size:12px;">${sew.guiaNumbers.join(', ') || '—'}</td>
               <td>${sew.worker}</td>
