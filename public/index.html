@@ -26,13 +26,12 @@
       --pink-light: #fce7f3;
       --blue: #3b82f6;
       --blue-light: #dbeafe;
-      --amber: #d97706;
-      --amber-light: #fef3c7;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
 
+    /* HEADER */
     .header {
       background: white;
       border-bottom: 1px solid var(--border);
@@ -49,25 +48,15 @@
       background: var(--primary-light);
       color: var(--primary);
       padding: 4px 12px;
-      border-radius: 6px;
+      border-radius: 20px;
       font-size: 13px;
       font-weight: 600;
     }
 
-    .deadline-bar {
-      background: white;
-      border-bottom: 1px solid var(--border);
-      padding: 8px 24px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 13px;
-      color: var(--text-light);
-    }
-    .deadline-bar .days-left { font-weight: 700; color: var(--warning); }
-
+    /* NAVIGATION TABS */
     .nav-tabs {
       display: flex;
+      gap: 0;
       background: white;
       border-bottom: 1px solid var(--border);
       padding: 0 24px;
@@ -81,37 +70,40 @@
       cursor: pointer;
       border-bottom: 2px solid transparent;
       white-space: nowrap;
+      transition: all 0.2s;
     }
-    .nav-tab:hover { color: var(--text); }
-    .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .nav-tab:hover { color: var(--primary); }
+    .nav-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      font-weight: 600;
+    }
 
-    .main { padding: 24px; max-width: 1500px; margin: 0 auto; }
+    /* MAIN CONTENT */
+    .main { padding: 24px; max-width: 1400px; margin: 0 auto; }
 
+    /* DASHBOARD CARDS */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
     .stat-card {
       background: var(--card);
-      padding: 16px 20px;
       border-radius: 12px;
+      padding: 20px;
       border: 1px solid var(--border);
     }
-    .stat-card .label {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-light);
-      font-weight: 600;
-    }
-    .stat-card .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+    .stat-card .label { font-size: 12px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; }
     .stat-card .sub { font-size: 12px; color: var(--text-light); margin-top: 4px; }
 
+    /* PROGRESS BAR */
     .progress-bar-container { background: var(--neutral-light); border-radius: 8px; height: 8px; overflow: hidden; margin-top: 8px; }
     .progress-bar-fill { height: 100%; border-radius: 8px; transition: width 0.5s ease; }
 
+    /* FILTERS */
     .filters {
       display: flex;
       gap: 12px;
@@ -131,6 +123,7 @@
     .filter-input:focus { border-color: var(--primary); }
     select.filter-input { cursor: pointer; }
 
+    /* TABLE */
     .table-container {
       background: var(--card);
       border-radius: 12px;
@@ -159,6 +152,7 @@
     }
     tbody tr:hover { background: #f9fafb; }
 
+    /* STATUS BADGES */
     .badge {
       display: inline-block;
       padding: 3px 10px;
@@ -167,14 +161,15 @@
       font-weight: 600;
     }
     .badge-sin_asignar { background: var(--neutral-light); color: var(--neutral); }
-    .badge-pendiente { background: var(--amber-light); color: var(--amber); }
     .badge-en_bordado { background: var(--blue-light); color: var(--blue); }
-    .badge-entregado { background: var(--success-light); color: var(--success); }
     .badge-completado { background: var(--success-light); color: var(--success); }
     .badge-correccion { background: var(--danger-light); color: var(--danger); }
+    .badge-pendiente { background: var(--neutral-light); color: var(--neutral); }
     .badge-listo_para_confeccion { background: var(--warning-light); color: var(--warning); }
     .badge-en_confeccion { background: var(--blue-light); color: var(--blue); }
+    .badge-en_proceso { background: var(--warning-light); color: var(--warning); }
 
+    /* GENDER BADGES */
     .gender-badge {
       display: inline-block;
       padding: 2px 8px;
@@ -185,6 +180,20 @@
     .gender-nina { background: var(--pink-light); color: var(--pink); }
     .gender-nino { background: var(--blue-light); color: var(--blue); }
 
+    /* COLLECTION GROUPS */
+    .collection-section {
+      margin-bottom: 24px;
+    }
+    .collection-header {
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* EDITABLE CELL */
     .editable {
       cursor: pointer;
       padding: 4px 8px;
@@ -204,6 +213,7 @@
       width: 100%;
     }
 
+    /* LOADING */
     .loading {
       display: flex;
       align-items: center;
@@ -223,6 +233,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* TOAST */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -240,6 +251,7 @@
     .toast-error { background: var(--danger); }
     @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+    /* RESPONSIVE */
     @media (max-width: 768px) {
       .header { padding: 12px 16px; }
       .main { padding: 16px; }
@@ -248,193 +260,20 @@
       .nav-tab { padding: 10px 14px; font-size: 13px; }
     }
 
-    /* EXPANDABLE ROWS */
-    .item-row { cursor: pointer; transition: background 0.15s; }
-    .item-row:hover { background: #f0f7ff !important; }
-    .item-row td:first-child .chevron {
-      display: inline-block;
-      transition: transform 0.2s;
-      font-size: 11px;
-      margin-right: 4px;
-      color: var(--text-light);
-    }
-    .item-row.expanded td:first-child .chevron { transform: rotate(90deg); }
-    .sub-row { display: none; }
-    .sub-row.visible { display: table-row; }
-    .sub-row td {
-      padding: 0 14px 12px 14px;
-      border-top: none;
-      background: var(--neutral-light);
-    }
-    .sub-table {
-      width: 100%;
-      font-size: 12px;
-      border-collapse: collapse;
-      margin-top: 8px;
-    }
-    .sub-table th {
-      padding: 4px 10px;
-      text-align: left;
-      font-weight: 600;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      color: var(--text-light);
-      border-bottom: 1px solid var(--border);
-    }
-    .sub-table td {
-      padding: 6px 10px;
-      border-top: 1px solid var(--border);
-      white-space: nowrap;
-      background: transparent;
-    }
-    .sub-table tr:first-child td { border-top: none; }
-    .assign-alert {
-      color: var(--danger);
-      font-size: 12px;
-      margin-top: 8px;
-    }
-    .btn-small {
-      padding: 4px 12px;
-      font-size: 12px;
-      font-family: inherit;
-      border: 1px solid var(--border);
-      border-radius: 6px;
+    /* DEADLINE BAR */
+    .deadline-bar {
       background: white;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.15s;
-    }
-    .btn-small:hover { border-color: var(--primary); color: var(--primary); }
-    .btn-primary-small {
-      padding: 4px 12px;
-      font-size: 12px;
-      font-family: inherit;
-      border: none;
-      border-radius: 6px;
-      background: var(--primary);
-      color: white;
-      cursor: pointer;
-      font-weight: 500;
-    }
-    .btn-primary-small:hover { background: #1d4ed8; }
-    .btn-danger-small {
-      padding: 4px 10px;
-      font-size: 11px;
-      font-family: inherit;
-      border: 1px solid var(--danger-light);
-      border-radius: 6px;
-      background: var(--danger-light);
-      color: var(--danger);
-      cursor: pointer;
-      font-weight: 500;
-    }
-    .assign-form {
+      border-bottom: 1px solid var(--border);
+      padding: 8px 24px;
       display: flex;
-      gap: 8px;
       align-items: center;
-      margin-top: 10px;
-      flex-wrap: wrap;
-    }
-    .assign-form input, .assign-form select {
-      padding: 5px 8px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 12px;
-      font-family: inherit;
-    }
-    .assign-form label {
-      font-size: 11px;
-      color: var(--text-light);
-      font-weight: 500;
-    }
-    .status-counters {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .status-counter {
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-    .assign-col { font-weight: 600; }
-    .assign-col.full { color: var(--success); }
-    .assign-col.partial { color: var(--warning); }
-    .assign-col.none { color: var(--neutral); }
-
-    .shipment-tag {
-      display: inline-block;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      margin-left: 4px;
-    }
-    .shipment-tag-ir { background: #dcfce7; color: #166534; }
-    .shipment-tag-uk { background: #dbeafe; color: #1e40af; }
-
-    .shipment-section {
-      margin: 24px 0;
-    }
-    .shipment-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 12px;
-    }
-    .shipment-card .shipment-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .shipment-card .shipment-title {
-      font-size: 15px;
-      font-weight: 600;
-    }
-    .shipment-card .shipment-deadline {
-      font-size: 12px;
-      color: var(--text-light);
-    }
-    .shipment-progress-row {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    .shipment-progress-label {
-      font-size: 12px;
-      color: var(--text-light);
-      min-width: 70px;
-    }
-    .shipment-progress-bar {
-      flex: 1;
-      background: var(--neutral-light);
-      border-radius: 8px;
-      height: 8px;
-      overflow: hidden;
-    }
-    .shipment-progress-fill {
-      height: 100%;
-      border-radius: 8px;
-      transition: width 0.5s ease;
-    }
-    .shipment-progress-pct {
+      gap: 12px;
       font-size: 13px;
-      font-weight: 600;
-      min-width: 40px;
-      text-align: right;
-    }
-    .shipment-stats {
-      display: flex;
-      gap: 16px;
-      font-size: 12px;
       color: var(--text-light);
-      margin-top: 4px;
+    }
+    .deadline-bar .days-left {
+      font-weight: 700;
+      color: var(--warning);
     }
   </style>
 </head>
@@ -453,6 +292,8 @@
 
 <div class="nav-tabs">
   <div class="nav-tab active" data-tab="dashboard">Dashboard</div>
+  <div class="nav-tab" data-tab="guias-bordado">Guías Bordado</div>
+  <div class="nav-tab" data-tab="guias-confeccion">Guías Confección</div>
   <div class="nav-tab" data-tab="bordado">Control Bordado</div>
   <div class="nav-tab" data-tab="confeccion">Control Confección</div>
   <div class="nav-tab" data-tab="productos">Productos</div>
@@ -464,23 +305,28 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+// ============================================================
+// SUPABASE CONNECTION
+// ============================================================
 const SUPABASE_URL = 'https://rtnvpriddrizwelgxxcl.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0bnZwcmlkZHJpendlbGd4eGNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NTQxNDksImV4cCI6MjA5NTMzMDE0OX0.fTodjktkbane5Vk-U7vg3XToXTsNZCeCk7bfCj-X31I';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// ============================================================
+// STATE
+// ============================================================
 let allItems = [];
 let products = [];
-let allAssignments = [];
-let allShipments = [];
-let allShipmentItems = [];
 let currentTab = 'dashboard';
-let filters = { search: '', gender: '', collection: '', status: '', shipment: '' };
-let expandedItems = new Set();
+let filters = { search: '', gender: '', collection: '', status: '' };
 
+// ============================================================
+// INIT
+// ============================================================
 async function init() {
-  setupTabs();
   calculateDeadline();
   await loadData();
+  setupTabs();
   render();
 }
 
@@ -489,24 +335,24 @@ function calculateDeadline() {
   const today = new Date();
   const diff = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
   const el = document.getElementById('days-left');
-  if (el) el.textContent = diff > 0 ? `${diff} días restantes` : 'Deadline pasado';
+  if (diff > 0) {
+    el.textContent = `${diff} días restantes`;
+    el.style.color = diff <= 14 ? 'var(--danger)' : diff <= 30 ? 'var(--warning)' : 'var(--success)';
+  } else {
+    el.textContent = 'Deadline pasado';
+    el.style.color = 'var(--danger)';
+  }
 }
 
 async function loadData() {
-  const [itemsRes, productsRes, assignRes, shipmentsRes, shipItemsRes] = await Promise.all([
-    sb.from('production_items').select('*, products(*)').order('id'),
-    sb.from('products').select('*').order('collection'),
-    sb.from('bordado_assignments').select('*').order('created_at'),
-    sb.from('shipments').select('*').order('priority'),
-    sb.from('shipment_items').select('*')
+  const [itemsRes, productsRes] = await Promise.all([
+    supabase.from('production_items').select('*, products(*)').order('id'),
+    supabase.from('products').select('*').order('collection')
   ]);
 
   if (itemsRes.error) { console.error(itemsRes.error); return; }
   allItems = itemsRes.data || [];
   products = productsRes.data || [];
-  allAssignments = assignRes.data || [];
-  allShipments = shipmentsRes.data || [];
-  allShipmentItems = shipItemsRes.data || [];
 }
 
 function setupTabs() {
@@ -515,16 +361,20 @@ function setupTabs() {
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentTab = tab.dataset.tab;
-      filters = { search: '', gender: '', collection: '', status: '', shipment: '' };
       render();
     });
   });
 }
 
+// ============================================================
+// RENDER
+// ============================================================
 function render() {
   const content = document.getElementById('content');
   switch (currentTab) {
     case 'dashboard': content.innerHTML = renderDashboard(); break;
+    case 'guias-bordado': guiaType = 'bordado'; guiaView = 'list'; content.innerHTML = renderGuias(); break;
+    case 'guias-confeccion': guiaType = 'confeccion'; guiaView = 'list'; content.innerHTML = renderGuias(); break;
     case 'bordado': content.innerHTML = renderBordado(); break;
     case 'confeccion': content.innerHTML = renderConfeccion(); break;
     case 'productos': content.innerHTML = renderProductos(); break;
@@ -532,190 +382,34 @@ function render() {
   attachListeners();
 }
 
-// === HELPERS ===
-function getItemAssignments(itemId) {
-  return allAssignments.filter(a => a.production_item_id === itemId);
-}
-
-function getItemBordadoInfo(item) {
-  const assigns = getItemAssignments(item.id);
-  const totalAssigned = assigns.reduce((s, a) => s + a.cantidad, 0);
-  const pending = item.quantity - totalAssigned;
-
-  let status = 'sin_asignar';
-  if (assigns.length > 0) {
-    const states = assigns.map(a => a.estado);
-    if (states.every(s => s === 'entregado') && pending <= 0) {
-      status = 'entregado';
-    } else if (states.some(s => s === 'en_bordado')) {
-      status = 'en_bordado';
-    } else if (states.some(s => s === 'entregado') && !states.every(s => s === 'entregado')) {
-      status = 'en_bordado';
-    } else {
-      status = 'pendiente';
-    }
-  }
-
-  const bordadora = assigns.length === 1 ? assigns[0].bordadora : (assigns.length > 1 ? 'Varias' : '—');
-  const fechaSalida = assigns.length === 1 ? assigns[0].fecha_salida : null;
-  const fechaRetEst = assigns.length === 1 ? assigns[0].fecha_retorno_est : null;
-
-  return { assigns, totalAssigned, pending, status, bordadora, fechaSalida, fechaRetEst };
-}
-
-function fmtDate(d) {
-  if (!d) return '—';
-  const dt = new Date(d + 'T00:00:00');
-  return dt.toLocaleDateString('es', { day: '2-digit', month: 'short' });
-}
-
-// === SHIPMENT HELPERS ===
-// Get the quantity allocated to a specific shipment for a production_item
-function getShipmentQty(itemId, shipmentId) {
-  const si = allShipmentItems.find(s => s.production_item_id === itemId && s.shipment_id === shipmentId);
-  return si ? si.quantity : 0;
-}
-
-// Get all shipment allocations for an item: [{shipment, qty}]
-function getItemShipmentAllocations(item) {
-  // Sort shipments by priority
-  const sorted = [...allShipments].sort((a, b) => a.priority - b.priority);
-  const allocations = [];
-  let allocated = 0;
-
-  for (const ship of sorted) {
-    const explicitQty = getShipmentQty(item.id, ship.id);
-    if (explicitQty > 0) {
-      allocations.push({ shipment: ship, qty: explicitQty });
-      allocated += explicitQty;
-    }
-  }
-
-  // Remainder goes to the lowest-priority shipment that has no explicit allocation
-  const remainder = item.quantity - allocated;
-  if (remainder > 0) {
-    // Remainder goes to the LAST priority shipment (UK) — not the first
-    const candidates = sorted.filter(s => !allShipmentItems.some(si => si.production_item_id === item.id && si.shipment_id === s.id));
-    const remainderShip = candidates.length > 0 ? candidates[candidates.length - 1] : null;
-    if (remainderShip) {
-      allocations.push({ shipment: remainderShip, qty: remainder });
-    }
-  }
-
-  return allocations;
-}
-
-// Calculate shipment progress using priority-based auto-fill
-// For bordado: units with status entregado fill highest-priority shipment first
-function getShipmentBordadoProgress(shipment) {
-  let totalNeeded = 0;
-  let totalDone = 0;
-
-  allItems.forEach(item => {
-    const allocations = getItemShipmentAllocations(item);
-    const alloc = allocations.find(a => a.shipment.id === shipment.id);
-    if (!alloc || alloc.qty === 0) return;
-
-    totalNeeded += alloc.qty;
-
-    // Calculate how many units of this item have bordado entregado
-    const info = getItemBordadoInfo(item);
-    const entregadoQty = info.assigns
-      .filter(a => a.estado === 'entregado')
-      .reduce((s, a) => s + a.cantidad, 0);
-
-    // Priority-based fill: higher priority shipments eat first
-    const sortedAllocs = allocations.sort((a, b) => a.shipment.priority - b.shipment.priority);
-    let remaining = entregadoQty;
-    for (const sa of sortedAllocs) {
-      if (sa.shipment.id === shipment.id) {
-        totalDone += Math.min(remaining, sa.qty);
-        break;
-      }
-      remaining -= Math.min(remaining, sa.qty);
-      if (remaining <= 0) break;
-    }
-  });
-
-  return { totalNeeded, totalDone, pct: totalNeeded > 0 ? Math.round((totalDone / totalNeeded) * 100) : 0 };
-}
-
-// Calculate confección progress for a shipment (priority-based)
-function getShipmentConfeccionProgress(shipment) {
-  let totalNeeded = 0;
-  let totalDone = 0;
-
-  allItems.forEach(item => {
-    const allocations = getItemShipmentAllocations(item);
-    const alloc = allocations.find(a => a.shipment.id === shipment.id);
-    if (!alloc || alloc.qty === 0) return;
-
-    totalNeeded += alloc.qty;
-
-    // For confección, use sew_status === 'completado' and sew_ok
-    if (item.sew_status === 'completado' && item.sew_ok) {
-      // All units of this item are done — fill by priority
-      const sortedAllocs = allocations.sort((a, b) => a.shipment.priority - b.shipment.priority);
-      let remaining = item.quantity;
-      for (const sa of sortedAllocs) {
-        if (sa.shipment.id === shipment.id) {
-          totalDone += Math.min(remaining, sa.qty);
-          break;
-        }
-        remaining -= Math.min(remaining, sa.qty);
-        if (remaining <= 0) break;
-      }
-    }
-  });
-
-  return { totalNeeded, totalDone, pct: totalNeeded > 0 ? Math.round((totalDone / totalNeeded) * 100) : 0 };
-}
-
-// Get shipment tags HTML for a production item
-function getShipmentTags(item) {
-  const allocations = getItemShipmentAllocations(item);
-  return allocations.map(a => {
-    const code = a.shipment.destination === 'Irlanda' ? 'IR' : 'UK';
-    const cls = code === 'IR' ? 'shipment-tag-ir' : 'shipment-tag-uk';
-    return `<span class="shipment-tag ${cls}" title="${a.shipment.name}: ${a.qty} uds">${code}:${a.qty}</span>`;
-  }).join('');
-}
-
-// Check if an item belongs to a specific shipment
-function itemBelongsToShipment(item, shipmentId) {
-  const allocations = getItemShipmentAllocations(item);
-  return allocations.some(a => a.shipment.id === parseInt(shipmentId) && a.qty > 0);
-}
-
-// === DASHBOARD ===
+// ============================================================
+// DASHBOARD
+// ============================================================
 function renderDashboard() {
   const total = allItems.length;
   const totalQty = allItems.reduce((s, i) => s + i.quantity, 0);
 
-  let embEntregado = 0, embEnBordado = 0, embPendiente = 0, embSinAsignar = 0;
-  allItems.forEach(item => {
-    const info = getItemBordadoInfo(item);
-    if (info.status === 'entregado') embEntregado++;
-    else if (info.status === 'en_bordado') embEnBordado++;
-    else if (info.status === 'pendiente') embPendiente++;
-    else embSinAsignar++;
-  });
+  // Embroidery stats
+  const embCompleted = allItems.filter(i => i.emb_status === 'completado');
+  const embInProgress = allItems.filter(i => i.emb_status === 'en_bordado');
+  const embPending = allItems.filter(i => i.emb_status === 'sin_asignar');
+  const embCorrection = allItems.filter(i => i.emb_status === 'correccion');
+  const embCompletedQty = embCompleted.reduce((s, i) => s + i.quantity, 0);
+  const embPct = totalQty > 0 ? Math.round((embCompletedQty / totalQty) * 100) : 0;
 
-  const embEntregadoQty = allItems.filter(i => getItemBordadoInfo(i).status === 'entregado').reduce((s, i) => s + i.quantity, 0);
-  const embPct = totalQty > 0 ? Math.round((embEntregadoQty / totalQty) * 100) : 0;
-
+  // Sewing stats
   const sewCompleted = allItems.filter(i => i.sew_status === 'completado');
   const sewInProgress = allItems.filter(i => i.sew_status === 'en_confeccion');
   const sewReady = allItems.filter(i => i.sew_status === 'listo_para_confeccion');
   const sewCompletedQty = sewCompleted.reduce((s, i) => s + i.quantity, 0);
   const sewPct = totalQty > 0 ? Math.round((sewCompletedQty / totalQty) * 100) : 0;
 
+  // Collections
   const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
-  const genders = { 'Niña': 0, 'Niño': 0 };
-  allItems.forEach(i => { if (i.products?.gender && genders[i.products.gender] !== undefined) genders[i.products.gender] += i.quantity; });
 
   return `
-    <h2 style="font-size:20px;margin-bottom:16px;">Dashboard de Producción</h2>
+    <h2 style="font-size:20px;margin-bottom:20px;">Dashboard de Producción</h2>
+
     <div class="stats-grid">
       <div class="stat-card">
         <div class="label">Total Ítems</div>
@@ -729,40 +423,44 @@ function renderDashboard() {
       </div>
       <div class="stat-card">
         <div class="label">Niña</div>
-        <div class="value" style="color:var(--pink)">${genders['Niña']}</div>
+        <div class="value" style="color:var(--pink)">${allItems.filter(i => i.products?.gender === 'Niña').reduce((s,i) => s + i.quantity, 0)}</div>
         <div class="sub">prendas</div>
       </div>
       <div class="stat-card">
         <div class="label">Niño</div>
-        <div class="value" style="color:var(--blue)">${genders['Niño']}</div>
+        <div class="value" style="color:var(--blue)">${allItems.filter(i => i.products?.gender === 'Niño').reduce((s,i) => s + i.quantity, 0)}</div>
         <div class="sub">prendas</div>
       </div>
     </div>
 
-    <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
-      <div class="stat-card">
+    <div class="stats-grid">
+      <div class="stat-card" style="grid-column: span 2;">
         <div class="label">Bordado</div>
-        <div class="value">${embPct}%</div>
-        <div class="sub" style="text-align:right">${embEntregadoQty} / ${totalQty} prendas</div>
-        <div class="progress-bar-container">
-          <div class="progress-bar-fill" style="width:${embPct}%;background:var(--blue);"></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <div class="value">${embPct}%</div>
+          <div class="sub">${embCompletedQty} / ${totalQty} prendas</div>
         </div>
-        <div class="sub" style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;">
-          <span>⚪ Sin asignar: ${embSinAsignar}</span>
-          <span>🟡 Pendiente: ${embPendiente}</span>
-          <span>🔵 En bordado: ${embEnBordado}</span>
-          <span>✅ Entregado: ${embEntregado}</span>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width:${embPct}%;background:var(--primary)"></div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--text-light)">
+          <span>⚪ Sin asignar: ${embPending.length}</span>
+          <span>🔵 En bordado: ${embInProgress.length}</span>
+          <span>✅ Completado: ${embCompleted.length}</span>
+          <span>🔴 Corrección: ${embCorrection.length}</span>
         </div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" style="grid-column: span 2;">
         <div class="label">Confección</div>
-        <div class="value">${sewPct}%</div>
-        <div class="sub" style="text-align:right">${sewCompletedQty} / ${totalQty} prendas</div>
-        <div class="progress-bar-container">
-          <div class="progress-bar-fill" style="width:${sewPct}%;background:var(--success);"></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <div class="value">${sewPct}%</div>
+          <div class="sub">${sewCompletedQty} / ${totalQty} prendas</div>
         </div>
-        <div class="sub" style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;">
-          <span>⚪ Pendiente: ${allItems.filter(i=>i.sew_status==='pendiente').length}</span>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width:${sewPct}%;background:var(--success)"></div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--text-light)">
+          <span>⚪ Pendiente: ${allItems.filter(i => i.sew_status === 'pendiente').length}</span>
           <span>🟡 Listo: ${sewReady.length}</span>
           <span>🔵 En confección: ${sewInProgress.length}</span>
           <span>✅ Completado: ${sewCompleted.length}</span>
@@ -770,68 +468,22 @@ function renderDashboard() {
       </div>
     </div>
 
-    ${allShipments.length > 0 ? `
-    <div class="shipment-section">
-      <h3 style="font-size:16px;margin-bottom:12px;">Por Envío</h3>
-      ${allShipments.map(ship => {
-        const bordProgress = getShipmentBordadoProgress(ship);
-        const confProgress = getShipmentConfeccionProgress(ship);
-        const deadlineDate = new Date(ship.deadline + 'T00:00:00');
-        const today = new Date();
-        const daysLeft = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
-        const daysText = daysLeft > 0 ? daysLeft + ' días' : 'Vencido';
-        const daysColor = daysLeft <= 7 ? 'var(--danger)' : (daysLeft <= 14 ? 'var(--warning)' : 'var(--text-light)');
-        const flagEmoji = ship.destination === 'Irlanda' ? '🇮🇪' : '🇬🇧';
-        return `
-        <div class="shipment-card">
-          <div class="shipment-header">
-            <div class="shipment-title">${flagEmoji} ${ship.name}</div>
-            <div class="shipment-deadline">
-              Deadline: <strong>${deadlineDate.toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' })}</strong>
-              — <span style="color:${daysColor};font-weight:600;">${daysText}</span>
-            </div>
-          </div>
-          <div class="shipment-progress-row">
-            <span class="shipment-progress-label">Bordado</span>
-            <div class="shipment-progress-bar">
-              <div class="shipment-progress-fill" style="width:${bordProgress.pct}%;background:var(--blue);"></div>
-            </div>
-            <span class="shipment-progress-pct">${bordProgress.pct}%</span>
-          </div>
-          <div class="shipment-progress-row">
-            <span class="shipment-progress-label">Confección</span>
-            <div class="shipment-progress-bar">
-              <div class="shipment-progress-fill" style="width:${confProgress.pct}%;background:var(--success);"></div>
-            </div>
-            <span class="shipment-progress-pct">${confProgress.pct}%</span>
-          </div>
-          <div class="shipment-stats">
-            <span>Bordado: ${bordProgress.totalDone}/${bordProgress.totalNeeded} prendas</span>
-            <span>Confección: ${confProgress.totalDone}/${confProgress.totalNeeded} prendas</span>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>
-    ` : ''}
-
     <h3 style="font-size:16px;margin:24px 0 12px;">Por Colección</h3>
     <div class="table-container"><div class="table-scroll">
       <table>
         <thead>
-          <tr>
-            <th>Colección</th><th>Género</th><th>Productos</th><th>Ítems</th><th>Prendas</th><th>Bordado</th><th>Confección</th>
-          </tr>
+          <tr><th>Colección</th><th>Género</th><th>Productos</th><th>Ítems</th><th>Prendas</th><th>Bordado</th><th>Confección</th></tr>
         </thead>
         <tbody>
           ${collections.map(col => {
             const colItems = allItems.filter(i => i.products?.collection === col);
+            const gender = colItems[0]?.products?.gender;
+            const colProducts = [...new Set(colItems.map(i => i.products?.code))].length;
             const colQty = colItems.reduce((s, i) => s + i.quantity, 0);
-            const colProducts = new Set(colItems.map(i => i.product_id)).size;
-            const gender = colItems[0]?.products?.gender || '';
-            const colEmbDone = colItems.filter(i => getItemBordadoInfo(i).status === 'entregado').reduce((s, i) => s + i.quantity, 0);
-            const colEmbPct = colQty > 0 ? Math.round((colEmbDone / colQty) * 100) : 0;
+            const colEmbDone = colItems.filter(i => i.emb_status === 'completado').reduce((s, i) => s + i.quantity, 0);
             const colSewDone = colItems.filter(i => i.sew_status === 'completado').reduce((s, i) => s + i.quantity, 0);
-            const colSewPct = colQty > 0 ? Math.round((colSewDone / colQty) * 100) : 0;
+            const embP = colQty > 0 ? Math.round((colEmbDone/colQty)*100) : 0;
+            const sewP = colQty > 0 ? Math.round((colSewDone/colQty)*100) : 0;
             return `<tr>
               <td><strong>${col}</strong></td>
               <td><span class="gender-badge gender-${gender === 'Niña' ? 'nina' : 'nino'}">${gender}</span></td>
@@ -840,14 +492,14 @@ function renderDashboard() {
               <td>${colQty}</td>
               <td>
                 <div style="display:flex;align-items:center;gap:8px;">
-                  <div class="progress-bar-container" style="width:80px;"><div class="progress-bar-fill" style="width:${colEmbPct}%;background:var(--blue);"></div></div>
-                  <span style="font-size:12px">${colEmbPct}%</span>
+                  <div class="progress-bar-container" style="width:80px;"><div class="progress-bar-fill" style="width:${embP}%;background:var(--primary)"></div></div>
+                  <span style="font-size:12px;">${embP}%</span>
                 </div>
               </td>
               <td>
                 <div style="display:flex;align-items:center;gap:8px;">
-                  <div class="progress-bar-container" style="width:80px;"><div class="progress-bar-fill" style="width:${colSewPct}%;background:var(--success);"></div></div>
-                  <span style="font-size:12px">${colSewPct}%</span>
+                  <div class="progress-bar-container" style="width:80px;"><div class="progress-bar-fill" style="width:${sewP}%;background:var(--success)"></div></div>
+                  <span style="font-size:12px;">${sewP}%</span>
                 </div>
               </td>
             </tr>`;
@@ -858,11 +510,672 @@ function renderDashboard() {
   `;
 }
 
-// === BORDADO VIEW ===
+// ============================================================
+// === GUÍAS SYSTEM ===
+
+function getAvailableQty(piId, forType) {
+  // Available = total qty minus qty sent in active guías of this type
+  const pi = allItems.find(i => i.id === piId);
+  if (!pi) return 0;
+  const sent = guiaItems
+    .filter(gi => gi.production_item_id === piId)
+    .filter(gi => {
+      const g = guias.find(gg => gg.id === gi.guia_id);
+      return g && g.type === forType && g.status !== 'cancelada';
+    })
+    .reduce((sum, gi) => sum + gi.qty_sent, 0);
+  return Math.max(0, pi.quantity - sent);
+}
+
+function getGuiaStatusLabel(status) {
+  const map = {
+    pendiente: 'Pendiente', enviada: 'Enviada', retorno_parcial: 'Retorno parcial',
+    completada: 'Completada', pagada: 'Pagada', cancelada: 'Cancelada'
+  };
+  return map[status] || status;
+}
+
+function getGuiaStatusClass(status) {
+  const map = {
+    pendiente: 'badge-pendiente', enviada: 'badge-en_bordado', retorno_parcial: 'badge-correccion',
+    completada: 'badge-listo_para_confeccion', pagada: 'badge-completado', cancelada: 'badge-sin_asignar'
+  };
+  return map[status] || '';
+}
+
+function isOverdue(guia) {
+  if (!guia.date_expected) return false;
+  if (['completada', 'pagada', 'cancelada'].includes(guia.status)) return false;
+  return new Date(guia.date_expected) < new Date();
+}
+
+async function getNextGuiaNumber(type) {
+  const prefix = type === 'bordado' ? 'GB' : 'GC';
+  const existing = guias.filter(g => g.type === type);
+  const nums = existing.map(g => {
+    const m = g.guia_number.match(/\d+$/);
+    return m ? parseInt(m[0]) : 0;
+  });
+  const next = nums.length > 0 ? Math.max(...nums) + 1 : 1;
+  return `${prefix}-${String(next).padStart(3, '0')}`;
+}
+
+function renderGuias() {
+  switch (guiaView) {
+    case 'list': return renderGuiaList();
+    case 'create': return renderGuiaCreate();
+    case 'create-step2': return renderGuiaCreateStep2();
+    case 'detail': return renderGuiaDetail();
+    case 'payment': return renderGuiaPayment();
+    case 'workers': return renderWorkersList();
+    default: return renderGuiaList();
+  }
+}
+
+function renderGuiaList() {
+  const typeLabel = guiaType === 'bordado' ? 'Bordado' : 'Confección';
+  const typeGuias = guias.filter(g => g.type === guiaType);
+  
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <h2 style="font-size:20px;font-weight:700;">Guías de ${typeLabel}</h2>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-action" onclick="guiaView='workers';render();" style="background:var(--neutral-light);color:var(--text);">
+        👥 ${typeLabel === 'Bordado' ? 'Bordadoras' : 'Costureras'}
+      </button>
+      <button class="btn-action" onclick="selectedPIIds.clear();guiaView='create';render();" style="background:var(--primary);color:white;">
+        + Nueva guía
+      </button>
+    </div>
+  </div>`;
+
+  if (typeGuias.length === 0) {
+    html += `<div style="text-align:center;padding:60px 20px;color:var(--text-light);">
+      <div style="font-size:48px;margin-bottom:16px;">📋</div>
+      <p style="font-size:16px;margin-bottom:8px;">No hay guías de ${typeLabel.toLowerCase()} aún</p>
+      <p style="font-size:14px;">Creá tu primera guía para empezar a asignar items a las ${typeLabel === 'Bordado' ? 'bordadoras' : 'costureras'}</p>
+    </div>`;
+    return html;
+  }
+
+  typeGuias.forEach(g => {
+    const gItems = guiaItems.filter(gi => gi.guia_id === g.id);
+    const worker = workers.find(w => w.id === g.worker_id);
+    const totalSent = gItems.reduce((s, gi) => s + gi.qty_sent, 0);
+    const totalOk = gItems.reduce((s, gi) => s + (gi.qty_returned_ok || 0), 0);
+    const totalCorr = gItems.reduce((s, gi) => s + (gi.qty_correction || 0), 0);
+    const totalDisc = gItems.reduce((s, gi) => s + (gi.qty_discount || 0), 0);
+    const collections = [...new Set(gItems.map(gi => gi.production_items?.products?.collection).filter(Boolean))];
+    const overdue = isOverdue(g);
+
+    html += `<div class="table-container" style="padding:16px 20px;margin-bottom:12px;cursor:pointer;${overdue ? 'border-left:4px solid var(--danger);' : ''}" 
+      onclick="currentGuiaId=${g.id};guiaView='${g.status === 'completada' ? 'payment' : 'detail'}';render();">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-weight:700;font-size:15px;">${g.guia_number}</span>
+          <span class="badge ${getGuiaStatusClass(g.status)}">${getGuiaStatusLabel(g.status)}</span>
+          ${overdue ? '<span class="badge badge-correccion">⚠ Atrasada</span>' : ''}
+        </div>
+        <span style="font-size:13px;color:var(--text-light);">${g.date_sent ? new Date(g.date_sent).toLocaleDateString('es') : 'Sin enviar'}</span>
+      </div>
+      <div style="font-size:13px;color:var(--text-light);">
+        ${worker ? worker.name : 'Sin asignar'} · ${collections.join(', ')} · ${totalSent} piezas
+        ${totalOk > 0 ? ` · <span style="color:var(--success)">${totalOk} OK</span>` : ''}
+        ${totalCorr > 0 ? ` · <span style="color:var(--warning)">${totalCorr} corrección</span>` : ''}
+        ${totalDisc > 0 ? ` · <span style="color:var(--danger)">${totalDisc} descuento</span>` : ''}
+      </div>
+    </div>`;
+  });
+
+  return html;
+}
+
+function renderGuiaCreate() {
+  const typeLabel = guiaType === 'bordado' ? 'Bordado' : 'Confección';
+  const availableItems = allItems.filter(pi => getAvailableQty(pi.id, guiaType) > 0);
+  const collections = [...new Set(availableItems.map(i => i.products?.collection).filter(Boolean))].sort();
+
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <h2 style="font-size:20px;font-weight:700;">Nueva guía — Seleccionar items</h2>
+    <button class="btn-action" onclick="guiaView='list';render();" style="background:var(--neutral-light);color:var(--text);">← Volver</button>
+  </div>`;
+
+  html += `<div class="filters">
+    <select class="filter-input" id="guia-filter-collection" onchange="filters.collection=this.value;render();">
+      <option value="">Todas las colecciones</option>
+      ${collections.map(c => `<option value="${c}" ${filters.collection === c ? 'selected' : ''}>${c}</option>`).join('')}
+    </select>
+  </div>`;
+
+  let filtered = availableItems;
+  if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
+  filtered.sort((a, b) => (a.products?.collection || '').localeCompare(b.products?.collection || '') || (a.products?.garment || '').localeCompare(b.products?.garment || '') || (a.size || '').localeCompare(b.size || ''));
+
+  html += `<div class="table-container"><div class="table-scroll"><table>
+    <thead><tr>
+      <th style="width:36px"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" ${selectedPIIds.size === filtered.length && filtered.length > 0 ? 'checked' : ''} /></th>
+      <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Talla</th><th>Disponible</th><th>Estado</th>
+    </tr></thead><tbody>`;
+
+  filtered.forEach(pi => {
+    const p = pi.products || {};
+    const avail = getAvailableQty(pi.id, guiaType);
+    const checked = selectedPIIds.has(pi.id);
+    // Check if partially assigned in other guías
+    const inOtherGuia = guiaItems.some(gi => gi.production_item_id === pi.id && guias.find(g => g.id === gi.guia_id && g.type === guiaType && g.status !== 'cancelada'));
+
+    html += `<tr style="${checked ? 'background:var(--primary-light);' : ''}">
+      <td><input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleSelectItem(${pi.id}, this.checked)" /></td>
+      <td style="font-weight:600">${p.code || ''}</td>
+      <td>${p.collection || ''}</td>
+      <td>${p.garment || ''}</td>
+      <td>${p.fabric || '—'}</td>
+      <td>${p.color || '—'}</td>
+      <td>${pi.size}</td>
+      <td><strong>${avail}</strong>${avail < pi.quantity ? ` / ${pi.quantity}` : ''}</td>
+      <td>${inOtherGuia ? '<span class="badge badge-en_bordado">Parcial en guía</span>' : '<span class="badge badge-completado">Disponible</span>'}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div></div>`;
+
+  if (selectedPIIds.size > 0) {
+    const totalPiezas = [...selectedPIIds].reduce((s, id) => s + getAvailableQty(id, guiaType), 0);
+    html += `<div style="position:sticky;bottom:0;background:var(--primary);color:white;padding:14px 20px;border-radius:12px;margin-top:16px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-weight:600;">${selectedPIIds.size} items seleccionados · ${totalPiezas} piezas</span>
+      <button onclick="guiaView='create-step2';render();" style="background:white;color:var(--primary);border:none;padding:10px 24px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">
+        Configurar guía →
+      </button>
+    </div>`;
+  }
+
+  return html;
+}
+
+function renderGuiaCreateStep2() {
+  const typeLabel = guiaType === 'bordado' ? 'Bordado' : 'Confección';
+  const typeWorkers = workers.filter(w => w.type === guiaType && w.active);
+  const selectedItems = allItems.filter(pi => selectedPIIds.has(pi.id));
+
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <h2 style="font-size:20px;font-weight:700;">Configurar guía</h2>
+    <button class="btn-action" onclick="guiaView='create';render();" style="background:var(--neutral-light);color:var(--text);">← Volver</button>
+  </div>`;
+
+  html += `<div class="table-container" style="padding:20px;margin-bottom:16px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text-light);display:block;margin-bottom:4px;">
+          ${guiaType === 'bordado' ? 'Bordadora' : 'Costurera'}
+        </label>
+        <select id="guia-worker" class="filter-input" style="width:100%;">
+          <option value="">Seleccionar...</option>
+          ${typeWorkers.map(w => `<option value="${w.id}">${w.name}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text-light);display:block;margin-bottom:4px;">Retorno esperado</label>
+        <input type="date" id="guia-date" class="filter-input" style="width:100%;" />
+      </div>
+    </div>
+    <div>
+      <label style="font-size:12px;font-weight:600;color:var(--text-light);display:block;margin-bottom:4px;">Notas (opcional)</label>
+      <input type="text" id="guia-notes" class="filter-input" style="width:100%;" placeholder="Instrucciones especiales..." />
+    </div>
+  </div>`;
+
+  html += `<div class="table-container"><div class="table-scroll"><table>
+    <thead><tr>
+      <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Talla</th><th>Disponible</th><th>Enviar</th><th>Precio/u</th>
+    </tr></thead><tbody>`;
+
+  selectedItems.forEach(pi => {
+    const p = pi.products || {};
+    const avail = getAvailableQty(pi.id, guiaType);
+    const price = guiaType === 'bordado' ? (p.emb_price || '') : (p.sew_price || '');
+    html += `<tr>
+      <td style="font-weight:600">${p.code || ''}</td>
+      <td>${p.collection || ''}</td>
+      <td>${p.garment || ''}</td>
+      <td>${p.fabric || '—'}</td>
+      <td>${p.color || '—'}</td>
+      <td>${pi.size}</td>
+      <td>${avail}</td>
+      <td><input type="number" class="filter-input guia-qty-input" data-pi-id="${pi.id}" data-max="${avail}" min="1" max="${avail}" value="${avail}" style="width:70px;text-align:center;" /></td>
+      <td style="color:var(--text-light);">${price ? `S/ ${parseFloat(price).toFixed(2)}` : '—'}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div></div>`;
+
+  html += `<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+    <button class="btn-action" onclick="guiaView='create';render();" style="background:var(--neutral-light);color:var(--text);">← Volver</button>
+    <button class="btn-action" onclick="saveNewGuia();" style="background:var(--primary);color:white;">✓ Crear guía</button>
+  </div>`;
+
+  return html;
+}
+
+async function saveNewGuia() {
+  const workerId = document.getElementById('guia-worker')?.value;
+  const dateExpected = document.getElementById('guia-date')?.value;
+  const notes = document.getElementById('guia-notes')?.value || '';
+
+  if (!workerId) { showToast('Seleccioná una ' + (guiaType === 'bordado' ? 'bordadora' : 'costurera'), 'error'); return; }
+
+  const guiaNumber = await getNextGuiaNumber(guiaType);
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data: newGuia, error: gErr } = await sb.from('guias').insert({
+    guia_number: guiaNumber,
+    type: guiaType,
+    worker_id: parseInt(workerId),
+    date_sent: today,
+    date_expected: dateExpected || null,
+    status: 'enviada',
+    notes: notes
+  }).select().single();
+
+  if (gErr) { showToast('Error al crear guía: ' + gErr.message, 'error'); return; }
+
+  const qtyInputs = document.querySelectorAll('.guia-qty-input');
+  const items = [];
+  qtyInputs.forEach(input => {
+    const piId = parseInt(input.dataset.piId);
+    const qty = parseInt(input.value);
+    const pi = allItems.find(i => i.id === piId);
+    const p = pi?.products || {};
+    const price = guiaType === 'bordado' ? p.emb_price : p.sew_price;
+    if (qty > 0) {
+      items.push({
+        guia_id: newGuia.id,
+        production_item_id: piId,
+        qty_sent: qty,
+        unit_price: price || null
+      });
+    }
+  });
+
+  if (items.length > 0) {
+    const { error: iErr } = await sb.from('guia_items').insert(items);
+    if (iErr) { showToast('Error al guardar items: ' + iErr.message, 'error'); return; }
+  }
+
+  showToast(`Guía ${guiaNumber} creada exitosamente`);
+  guiaView = 'list';
+  selectedPIIds.clear();
+  await loadData();
+  render();
+}
+
+function renderGuiaDetail() {
+  const g = guias.find(gg => gg.id === currentGuiaId);
+  if (!g) { guiaView = 'list'; return renderGuiaList(); }
+
+  const gItems = guiaItems.filter(gi => gi.guia_id === g.id);
+  const worker = workers.find(w => w.id === g.worker_id);
+  const overdue = isOverdue(g);
+  const totalSent = gItems.reduce((s, gi) => s + gi.qty_sent, 0);
+  const totalOk = gItems.reduce((s, gi) => s + (gi.qty_returned_ok || 0), 0);
+  const totalCorr = gItems.reduce((s, gi) => s + (gi.qty_correction || 0), 0);
+  const totalDisc = gItems.reduce((s, gi) => s + (gi.qty_discount || 0), 0);
+  const isActive = !['completada', 'pagada', 'cancelada'].includes(g.status);
+
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <h2 style="font-size:20px;font-weight:700;">${g.guia_number}</h2>
+      <span class="badge ${getGuiaStatusClass(g.status)}">${getGuiaStatusLabel(g.status)}</span>
+      ${overdue ? '<span class="badge badge-correccion">⚠ Atrasada</span>' : ''}
+    </div>
+    <div style="display:flex;gap:8px;">
+      ${isActive ? `<button class="btn-action" onclick="cancelGuia(${g.id});" style="background:var(--danger-light);color:var(--danger);">✕ Cancelar guía</button>` : ''}
+      ${g.status === 'completada' ? `<button class="btn-action" onclick="guiaView='payment';render();" style="background:var(--success);color:white;">$ Generar pago</button>` : ''}
+      <button class="btn-action" onclick="guiaView='list';render();" style="background:var(--neutral-light);color:var(--text);">← Volver</button>
+    </div>
+  </div>
+  <p style="color:var(--text-light);font-size:14px;margin-bottom:20px;">
+    ${worker ? worker.name : '—'} · Enviada ${g.date_sent ? new Date(g.date_sent).toLocaleDateString('es') : '—'}
+    ${g.date_expected ? ` · Retorno esperado ${new Date(g.date_expected).toLocaleDateString('es')}` : ''}
+    ${g.notes ? ` · ${g.notes}` : ''}
+  </p>`;
+
+  // Stats
+  html += `<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+    <div class="stat-card"><div class="label">Enviadas</div><div class="value">${totalSent}</div></div>
+    <div class="stat-card"><div class="label">OK</div><div class="value" style="color:var(--success)">${totalOk}</div></div>
+    <div class="stat-card"><div class="label">Corrección</div><div class="value" style="color:var(--warning)">${totalCorr}</div></div>
+    <div class="stat-card"><div class="label">Descuento</div><div class="value" style="color:var(--danger)">${totalDisc}</div></div>
+  </div>`;
+
+  // Items table
+  html += `<div class="table-container"><div class="table-scroll"><table>
+    <thead><tr>
+      <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Talla</th><th>Enviadas</th>
+      <th style="color:var(--success)">✓ OK</th>
+      <th style="color:var(--warning)">↻ Corrección</th>
+      <th style="color:var(--danger)">✕ Descuento</th>
+    </tr></thead><tbody>`;
+
+  gItems.forEach(gi => {
+    const p = gi.production_items?.products || {};
+    const pi = gi.production_items || {};
+    html += `<tr>
+      <td style="font-weight:600">${p.code || ''}</td>
+      <td>${p.collection || ''}</td>
+      <td>${p.garment || ''}</td>
+      <td>${p.fabric || '—'}</td>
+      <td>${pi.size || ''}</td>
+      <td>${gi.qty_sent}</td>
+      <td>${isActive ? `<input type="number" class="filter-input return-ok" data-gi-id="${gi.id}" min="0" max="${gi.qty_sent}" value="${gi.qty_returned_ok || 0}" style="width:60px;text-align:center;" />` : gi.qty_returned_ok || 0}</td>
+      <td>${isActive ? `<input type="number" class="filter-input return-corr" data-gi-id="${gi.id}" min="0" max="${gi.qty_sent}" value="${gi.qty_correction || 0}" style="width:60px;text-align:center;" />` : gi.qty_correction || 0}</td>
+      <td>${isActive ? `<input type="number" class="filter-input return-disc" data-gi-id="${gi.id}" min="0" max="${gi.qty_sent}" value="${gi.qty_discount || 0}" style="width:60px;text-align:center;" />` : gi.qty_discount || 0}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div></div>`;
+
+  if (isActive) {
+    html += `<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+      <button class="btn-action" onclick="printGuia(${g.id});" style="background:var(--neutral-light);color:var(--text);">🖨 Imprimir</button>
+      <button class="btn-action" onclick="saveGuiaReturn(${g.id});" style="background:var(--primary);color:white;">💾 Guardar retorno</button>
+    </div>`;
+  }
+
+  return html;
+}
+
+async function saveGuiaReturn(guiaId) {
+  const okInputs = document.querySelectorAll('.return-ok');
+  const corrInputs = document.querySelectorAll('.return-corr');
+  const discInputs = document.querySelectorAll('.return-disc');
+
+  const updates = [];
+  okInputs.forEach(input => {
+    const giId = parseInt(input.dataset.giId);
+    const ok = parseInt(input.value) || 0;
+    const corrEl = document.querySelector(`.return-corr[data-gi-id="${giId}"]`);
+    const discEl = document.querySelector(`.return-disc[data-gi-id="${giId}"]`);
+    const corr = parseInt(corrEl?.value) || 0;
+    const disc = parseInt(discEl?.value) || 0;
+    updates.push({ id: giId, qty_returned_ok: ok, qty_correction: corr, qty_discount: disc });
+  });
+
+  for (const u of updates) {
+    await sb.from('guia_items').update({
+      qty_returned_ok: u.qty_returned_ok,
+      qty_correction: u.qty_correction,
+      qty_discount: u.qty_discount
+    }).eq('id', u.id);
+  }
+
+  // Update guía status
+  const gItems = guiaItems.filter(gi => gi.guia_id === guiaId);
+  const totalSent = gItems.reduce((s, gi) => s + gi.qty_sent, 0);
+  const totalProcessed = updates.reduce((s, u) => s + u.qty_returned_ok + u.qty_discount, 0);
+  const totalCorr = updates.reduce((s, u) => s + u.qty_correction, 0);
+
+  let newStatus = 'enviada';
+  if (totalProcessed + totalCorr >= totalSent && totalCorr === 0) newStatus = 'completada';
+  else if (totalProcessed + totalCorr > 0) newStatus = 'retorno_parcial';
+
+  await sb.from('guias').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', guiaId);
+
+  showToast('Retorno guardado');
+  await loadData();
+  render();
+}
+
+async function cancelGuia(guiaId) {
+  if (!confirm('¿Cancelar esta guía? Las piezas volverán a estar disponibles.')) return;
+  await sb.from('guias').update({ status: 'cancelada', updated_at: new Date().toISOString() }).eq('id', guiaId);
+  showToast('Guía cancelada');
+  await loadData();
+  guiaView = 'list';
+  render();
+}
+
+function renderGuiaPayment() {
+  const g = guias.find(gg => gg.id === currentGuiaId);
+  if (!g) { guiaView = 'list'; return renderGuiaList(); }
+
+  const gItems = guiaItems.filter(gi => gi.guia_id === g.id);
+  const worker = workers.find(w => w.id === g.worker_id);
+  const okItems = gItems.filter(gi => (gi.qty_returned_ok || 0) > 0);
+  const discItems = gItems.filter(gi => (gi.qty_discount || 0) > 0);
+  
+  let totalPay = 0;
+  let totalDisc = 0;
+  let totalPiezasOk = 0;
+  let totalPiezasDisc = 0;
+
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <h2 style="font-size:20px;font-weight:700;">${g.guia_number} — Pago</h2>
+      <span class="badge ${getGuiaStatusClass(g.status)}">${getGuiaStatusLabel(g.status)}</span>
+    </div>
+    <button class="btn-action" onclick="guiaView='detail';render();" style="background:var(--neutral-light);color:var(--text);">← Volver</button>
+  </div>
+  <p style="color:var(--text-light);font-size:14px;margin-bottom:20px;">${worker ? worker.name : '—'}</p>`;
+
+  // OK items
+  html += `<div class="table-container" style="margin-bottom:16px;"><div style="padding:12px 20px;font-weight:600;color:var(--success);font-size:13px;">✓ Piezas a pagar</div>
+    <div class="table-scroll"><table>
+    <thead><tr><th>Código</th><th>Prenda</th><th>Talla</th><th>Cant.</th><th>Precio/u</th><th style="text-align:right">Subtotal</th></tr></thead><tbody>`;
+
+  okItems.forEach(gi => {
+    const p = gi.production_items?.products || {};
+    const pi = gi.production_items || {};
+    const price = gi.unit_price || 0;
+    const subtotal = (gi.qty_returned_ok || 0) * price;
+    totalPay += subtotal;
+    totalPiezasOk += (gi.qty_returned_ok || 0);
+    html += `<tr>
+      <td style="font-weight:600">${p.code || ''}</td>
+      <td>${p.garment || ''}</td>
+      <td>${pi.size || ''}</td>
+      <td>${gi.qty_returned_ok}</td>
+      <td>${price > 0 ? `S/ ${parseFloat(price).toFixed(2)}` : '—'}</td>
+      <td style="text-align:right">${price > 0 ? `S/ ${subtotal.toFixed(2)}` : '—'}</td>
+    </tr>`;
+  });
+
+  html += `<tr style="font-weight:700;border-top:2px solid var(--border);">
+    <td colspan="3" style="text-align:right">Subtotal pagable</td><td>${totalPiezasOk}</td><td></td>
+    <td style="text-align:right">${totalPay > 0 ? `S/ ${totalPay.toFixed(2)}` : '—'}</td>
+  </tr></tbody></table></div></div>`;
+
+  // Discount items
+  if (discItems.length > 0) {
+    html += `<div class="table-container" style="margin-bottom:16px;"><div style="padding:12px 20px;font-weight:600;color:var(--danger);font-size:13px;">✕ Descuentos (no se pagan)</div>
+      <div class="table-scroll"><table><tbody>`;
+    discItems.forEach(gi => {
+      const p = gi.production_items?.products || {};
+      const pi = gi.production_items || {};
+      const price = gi.unit_price || 0;
+      const subtotal = (gi.qty_discount || 0) * price;
+      totalDisc += subtotal;
+      totalPiezasDisc += (gi.qty_discount || 0);
+      html += `<tr style="color:var(--danger);">
+        <td>${p.code || ''}</td><td>${p.garment || ''}</td><td>${pi.size || ''}</td>
+        <td>${gi.qty_discount}</td><td>${price > 0 ? `S/ ${parseFloat(price).toFixed(2)}` : '—'}</td>
+        <td style="text-align:right">${price > 0 ? `-S/ ${subtotal.toFixed(2)}` : '—'}</td>
+      </tr>`;
+    });
+    html += `<tr style="font-weight:700;color:var(--danger);border-top:2px solid var(--border);">
+      <td colspan="3" style="text-align:right">Total descuento</td><td>${totalPiezasDisc}</td><td></td>
+      <td style="text-align:right">${totalDisc > 0 ? `-S/ ${totalDisc.toFixed(2)}` : '—'}</td>
+    </tr></tbody></table></div></div>`;
+  }
+
+  // Summary
+  html += `<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+    <div class="stat-card"><div class="label">Piezas OK</div><div class="value" style="color:var(--success)">${totalPiezasOk}</div></div>
+    <div class="stat-card"><div class="label">Descuentos</div><div class="value" style="color:var(--danger)">${totalPiezasDisc}</div></div>
+    <div class="stat-card" style="background:var(--success-light);border-color:var(--success);">
+      <div class="label">Total a pagar</div>
+      <div class="value" style="color:var(--success)">${totalPay > 0 ? `S/ ${totalPay.toFixed(2)}` : '—'}</div>
+    </div>
+  </div>`;
+
+  html += `<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+    <button class="btn-action" onclick="printGuia(${g.id});" style="background:var(--neutral-light);color:var(--text);">🖨 Imprimir</button>
+    ${g.status !== 'pagada' ? `<button class="btn-action" onclick="markPaid(${g.id});" style="background:var(--success);color:white;">✓ Marcar como pagada</button>` : '<span class="badge badge-completado" style="padding:10px 20px;font-size:14px;">✓ Pagada</span>'}
+  </div>`;
+
+  return html;
+}
+
+async function markPaid(guiaId) {
+  await sb.from('guias').update({ status: 'pagada', updated_at: new Date().toISOString() }).eq('id', guiaId);
+  showToast('Guía marcada como pagada');
+  await loadData();
+  render();
+}
+
+function renderWorkersList() {
+  const typeLabel = guiaType === 'bordado' ? 'Bordadoras' : 'Costureras';
+  const typeWorkers = workers.filter(w => w.type === guiaType);
+
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <h2 style="font-size:20px;font-weight:700;">${typeLabel}</h2>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-action" onclick="guiaView='list';render();" style="background:var(--neutral-light);color:var(--text);">← Volver</button>
+    </div>
+  </div>`;
+
+  html += `<div class="table-container" style="padding:20px;margin-bottom:16px;">
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <input type="text" id="new-worker-name" class="filter-input" placeholder="Nombre" style="flex:1;" />
+      <input type="text" id="new-worker-phone" class="filter-input" placeholder="Teléfono (opcional)" style="width:150px;" />
+      <button class="btn-action" onclick="addWorker();" style="background:var(--primary);color:white;">+ Agregar</button>
+    </div>
+  </div>`;
+
+  if (typeWorkers.length === 0) {
+    html += `<div style="text-align:center;padding:40px;color:var(--text-light);">
+      <p>No hay ${typeLabel.toLowerCase()} registradas. Agregá la primera arriba.</p>
+    </div>`;
+  } else {
+    html += `<div class="table-container"><div class="table-scroll"><table>
+      <thead><tr><th>Nombre</th><th>Teléfono</th><th>Guías activas</th><th>Piezas en mano</th><th>Estado</th><th></th></tr></thead><tbody>`;
+
+    typeWorkers.forEach(w => {
+      const wGuias = guias.filter(g => g.worker_id === w.id && !['completada', 'pagada', 'cancelada'].includes(g.status));
+      const wPiezas = wGuias.reduce((sum, g) => {
+        const gi = guiaItems.filter(i => i.guia_id === g.id);
+        return sum + gi.reduce((s, i) => s + i.qty_sent - (i.qty_returned_ok || 0) - (i.qty_discount || 0), 0);
+      }, 0);
+
+      html += `<tr>
+        <td style="font-weight:600">${w.name}</td>
+        <td>${w.phone || '—'}</td>
+        <td>${wGuias.length}</td>
+        <td>${wPiezas}</td>
+        <td>${w.active ? '<span class="badge badge-completado">Activa</span>' : '<span class="badge badge-sin_asignar">Inactiva</span>'}</td>
+        <td><button class="btn-action" onclick="toggleWorkerActive(${w.id}, ${!w.active});" style="background:var(--neutral-light);color:var(--text);font-size:12px;padding:4px 10px;">
+          ${w.active ? 'Desactivar' : 'Activar'}
+        </button></td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div></div>`;
+  }
+
+  return html;
+}
+
+async function addWorker() {
+  const name = document.getElementById('new-worker-name')?.value?.trim();
+  const phone = document.getElementById('new-worker-phone')?.value?.trim();
+  if (!name) { showToast('Ingresá un nombre', 'error'); return; }
+
+  const { error } = await sb.from('workers').insert({ name, phone: phone || null, type: guiaType });
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+
+  showToast(`${guiaType === 'bordado' ? 'Bordadora' : 'Costurera'} agregada`);
+  await loadData();
+  render();
+}
+
+async function toggleWorkerActive(workerId, active) {
+  await sb.from('workers').update({ active }).eq('id', workerId);
+  await loadData();
+  render();
+}
+
+function toggleSelectAll(checked) {
+  const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+  selectedPIIds.clear();
+  if (checked) {
+    checkboxes.forEach(cb => {
+      const piId = parseInt(cb.closest('tr').querySelector('.filter-input, input[type="checkbox"]')?.getAttribute('onchange')?.match(/\d+/)?.[0]);
+      if (!isNaN(piId)) selectedPIIds.add(piId);
+      cb.checked = true;
+    });
+    // Better approach: get from filtered items
+    const availableItems = allItems.filter(pi => getAvailableQty(pi.id, guiaType) > 0);
+    let filtered = availableItems;
+    if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
+    filtered.forEach(pi => selectedPIIds.add(pi.id));
+  }
+  render();
+}
+
+function toggleSelectItem(piId, checked) {
+  if (checked) selectedPIIds.add(piId);
+  else selectedPIIds.delete(piId);
+  render();
+}
+
+function printGuia(guiaId) {
+  const g = guias.find(gg => gg.id === guiaId);
+  if (!g) return;
+  const gItems_local = guiaItems.filter(gi => gi.guia_id === g.id);
+  const worker = workers.find(w => w.id === g.worker_id);
+  const typeLabel = g.type === 'bordado' ? 'Bordado' : 'Confección';
+
+  let printHtml = `<html><head><title>Guía ${g.guia_number}</title>
+    <style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}
+    table{width:100%;border-collapse:collapse;margin-top:12px;}
+    th,td{border:1px solid #ccc;padding:6px 10px;text-align:left;}
+    th{background:#f0f0f0;font-weight:bold;}
+    h1{font-size:18px;margin-bottom:4px;}
+    .meta{color:#666;margin-bottom:12px;}
+    .sign{margin-top:40px;display:flex;justify-content:space-between;}
+    .sign div{border-top:1px solid #333;width:200px;text-align:center;padding-top:4px;}
+    </style></head><body>
+    <h1>Guía de ${typeLabel} — ${g.guia_number}</h1>
+    <div class="meta">
+      <strong>${worker ? worker.name : '—'}</strong><br>
+      Fecha envío: ${g.date_sent || '—'} · Retorno esperado: ${g.date_expected || '—'}<br>
+      ${g.notes ? `Notas: ${g.notes}` : ''}
+    </div>
+    <table><thead><tr><th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Talla</th><th>Cantidad</th><th>Precio/u</th></tr></thead><tbody>`;
+
+  let totalPiezas = 0;
+  gItems_local.forEach(gi => {
+    const p = gi.production_items?.products || {};
+    const pi = gi.production_items || {};
+    totalPiezas += gi.qty_sent;
+    printHtml += `<tr><td>${p.code||''}</td><td>${p.collection||''}</td><td>${p.garment||''}</td><td>${p.fabric||'—'}</td><td>${p.color||'—'}</td><td>${pi.size||''}</td><td>${gi.qty_sent}</td><td>${gi.unit_price ? `S/ ${parseFloat(gi.unit_price).toFixed(2)}` : '—'}</td></tr>`;
+  });
+  printHtml += `<tr style="font-weight:bold;"><td colspan="6" style="text-align:right">Total</td><td>${totalPiezas}</td><td></td></tr>`;
+  printHtml += `</tbody></table>
+    <div class="sign"><div>Entrega</div><div>Recibe</div></div>
+    </body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(printHtml);
+  w.document.close();
+  w.print();
+}
+
+
+// BORDADO VIEW
+// ============================================================
 function renderBordado() {
   const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
-  const statuses = ['sin_asignar', 'pendiente', 'en_bordado', 'entregado'];
-  const statusLabels = { sin_asignar: 'Sin asignar', pendiente: 'Pendiente', en_bordado: 'En bordado', entregado: 'Entregado' };
+  const statuses = ['sin_asignar', 'en_bordado', 'completado', 'correccion'];
+  const statusLabels = { sin_asignar: 'Sin asignar', en_bordado: 'En bordado', completado: 'Completado', correccion: 'Corrección' };
 
   let filtered = [...allItems];
   if (filters.search) {
@@ -871,22 +1184,17 @@ function renderBordado() {
       i.products?.code?.toLowerCase().includes(s) ||
       i.products?.collection?.toLowerCase().includes(s) ||
       i.products?.garment?.toLowerCase().includes(s) ||
-      getItemBordadoInfo(i).bordadora.toLowerCase().includes(s)
+      (i.embroiderer || '').toLowerCase().includes(s)
     );
   }
   if (filters.gender) filtered = filtered.filter(i => i.products?.gender === filters.gender);
   if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
-  if (filters.status) filtered = filtered.filter(i => getItemBordadoInfo(i).status === filters.status);
-  if (filters.shipment) filtered = filtered.filter(i => itemBelongsToShipment(i, filters.shipment));
-
-  // Status counters
-  const counts = { sin_asignar: 0, pendiente: 0, en_bordado: 0, entregado: 0 };
-  filtered.forEach(i => { const s = getItemBordadoInfo(i).status; counts[s]++; });
+  if (filters.status) filtered = filtered.filter(i => i.emb_status === filters.status);
 
   return `
     <h2 style="font-size:20px;margin-bottom:16px;">Control de Bordado</h2>
     <div class="filters">
-      <input class="filter-input" type="text" placeholder="Buscar código, colección, bordadora..." id="filter-search" value="${filters.search}" style="width:260px;">
+      <input class="filter-input" type="text" placeholder="Buscar código, colección..." id="filter-search" value="${filters.search}" style="width:220px;">
       <select class="filter-input" id="filter-gender">
         <option value="">Todos los géneros</option>
         <option value="Niña" ${filters.gender === 'Niña' ? 'selected' : ''}>Niña</option>
@@ -900,238 +1208,58 @@ function renderBordado() {
         <option value="">Todos los estados</option>
         ${statuses.map(s => `<option value="${s}" ${filters.status === s ? 'selected' : ''}>${statusLabels[s]}</option>`).join('')}
       </select>
-      ${allShipments.length > 0 ? `
-      <select class="filter-input" id="filter-shipment">
-        <option value="">Todos los envíos</option>
-        ${allShipments.map(s => `<option value="${s.id}" ${filters.shipment == s.id ? 'selected' : ''}>${s.destination === 'Irlanda' ? '🇮🇪' : '🇬🇧'} ${s.name}</option>`).join('')}
-      </select>
-      ` : ''}
       <span style="font-size:13px;color:var(--text-light);">${filtered.length} ítems</span>
     </div>
-
-    <div style="margin-bottom:16px;" class="status-counters">
-      <span class="status-counter badge-sin_asignar">Sin asignar ${counts.sin_asignar}</span>
-      <span class="status-counter badge-pendiente">Pendiente ${counts.pendiente}</span>
-      <span class="status-counter badge-en_bordado">En bordado ${counts.en_bordado}</span>
-      <span class="status-counter badge-entregado">Entregado ${counts.entregado}</span>
-    </div>
-
     <div class="table-container"><div class="table-scroll">
       <table>
         <thead>
           <tr>
-            <th>Código</th><th>Colección</th><th>Tela</th><th>Color</th><th>Prenda</th><th>Talla</th><th>Cant.</th><th>Envío</th>
-            <th>Asig.</th><th>Bordadora</th><th>Salida</th><th>Ret. Est.</th><th>Estado</th>
+            <th>Código</th><th>Colección</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th>
+            <th>Bordadora</th><th>Asignadas</th><th>F. Salida</th><th>F. Ret. Est.</th><th>F. Ret. Real</th><th>OK</th><th>Estado</th>
           </tr>
         </thead>
         <tbody>
-          ${filtered.map(item => {
-            const info = getItemBordadoInfo(item);
-            const isExpanded = expandedItems.has(item.id);
-            const assignClass = info.totalAssigned >= item.quantity ? 'full' : (info.totalAssigned > 0 ? 'partial' : 'none');
-
-            let mainRow = `
-            <tr class="item-row ${isExpanded ? 'expanded' : ''}" onclick="toggleRow(${item.id})">
-              <td><span class="chevron">▶</span><strong>${item.products?.code || ''}</strong></td>
+          ${filtered.map(item => `
+            <tr>
+              <td><strong>${item.products?.code || ''}</strong></td>
               <td>${item.products?.collection || ''}</td>
-              <td>${item.products?.fabric || '—'}</td>
-              <td>${item.products?.color || '—'}</td>
               <td>${item.products?.garment || ''}</td>
+              <td><span class="gender-badge gender-${item.products?.gender === 'Niña' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
               <td>${item.size}</td>
               <td><strong>${item.quantity}</strong></td>
-              <td>${getShipmentTags(item)}</td>
-              <td><span class="assign-col ${assignClass}">${info.totalAssigned}/${item.quantity}</span></td>
-              <td>${info.bordadora === 'Varias' ? '<em style="color:var(--text-light)">Varias</em>' : (info.bordadora || '—')}</td>
-              <td>${info.assigns.length === 1 ? fmtDate(info.fechaSalida) : '—'}</td>
-              <td>${info.assigns.length === 1 ? fmtDate(info.fechaRetEst) : '—'}</td>
-              <td><span class="badge badge-${info.status}">${statusLabels[info.status]}</span></td>
-            </tr>`;
-
-            let subRow = `
-            <tr class="sub-row ${isExpanded ? 'visible' : ''}" id="sub-${item.id}">
-              <td colspan="13">
-                <div style="padding:8px 0 4px 20px;">
-                  <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text-light);letter-spacing:0.5px;margin-bottom:6px;">
-                    Asignaciones
-                  </div>
-                  ${info.assigns.length > 0 ? `
-                  <table class="sub-table">
-                    <thead>
-                      <tr><th>Bordadora</th><th>Cant.</th><th>Salida</th><th>Ret. Est.</th><th>Ret. Real</th><th>Estado</th><th></th></tr>
-                    </thead>
-                    <tbody>
-                      ${info.assigns.map(a => `
-                      <tr>
-                        <td>
-                          <span class="editable" onclick="event.stopPropagation();editAssignField(this,${a.id},'bordadora','text')">${a.bordadora}</span>
-                        </td>
-                        <td>
-                          <span class="editable" onclick="event.stopPropagation();editAssignField(this,${a.id},'cantidad','number')">${a.cantidad}</span>
-                        </td>
-                        <td>
-                          <span class="editable" onclick="event.stopPropagation();editAssignField(this,${a.id},'fecha_salida','date')">${fmtDate(a.fecha_salida)}</span>
-                        </td>
-                        <td>
-                          <span class="editable" onclick="event.stopPropagation();editAssignField(this,${a.id},'fecha_retorno_est','date')">${fmtDate(a.fecha_retorno_est)}</span>
-                        </td>
-                        <td>
-                          <span class="editable" onclick="event.stopPropagation();editAssignField(this,${a.id},'fecha_retorno_real','date')">${fmtDate(a.fecha_retorno_real)}</span>
-                        </td>
-                        <td>
-                          <span class="editable" onclick="event.stopPropagation();editAssignStatus(this,${a.id},'${a.estado}')">
-                            <span class="badge badge-${a.estado}">${statusLabels[a.estado] || a.estado}</span>
-                          </span>
-                        </td>
-                        <td>
-                          <button class="btn-danger-small" onclick="event.stopPropagation();deleteAssignment(${a.id})">✕</button>
-                        </td>
-                      </tr>
-                      `).join('')}
-                    </tbody>
-                  </table>
-                  ` : '<div style="font-size:13px;color:var(--text-light);margin:4px 0;">Sin asignaciones todavía</div>'}
-                  ${info.pending > 0 ? `<div class="assign-alert">⚠ ${info.pending} unidad${info.pending > 1 ? 'es' : ''} sin asignar</div>` : ''}
-                  <div id="assign-form-${item.id}"></div>
-                  <div style="margin-top:8px;">
-                    <button class="btn-small" onclick="event.stopPropagation();showAssignForm(${item.id}, ${item.quantity - info.totalAssigned})">+ Nueva asignación</button>
-                  </div>
-                </div>
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'embroiderer', 'text')">${item.embroiderer || '—'}</span>
               </td>
-            </tr>`;
-
-            return mainRow + subRow;
-          }).join('')}
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'emb_qty_assigned', 'number')">${item.emb_qty_assigned || 0}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_sent', 'date')">${item.emb_date_sent || '—'}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_expected', 'date')">${item.emb_date_expected || '—'}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_returned', 'date')">${item.emb_date_returned || '—'}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="toggleBool(${item.id}, 'emb_ok', ${item.emb_ok})">${item.emb_ok ? '✅' : '—'}</span>
+              </td>
+              <td>
+                <span class="editable" onclick="editStatus(this, ${item.id}, 'emb_status', ['sin_asignar','en_bordado','completado','correccion'])"
+                ><span class="badge badge-${item.emb_status}">${statusLabels[item.emb_status] || item.emb_status}</span></span>
+              </td>
+            </tr>
+          `).join('')}
         </tbody>
       </table>
     </div></div>
   `;
 }
 
-function toggleRow(itemId) {
-  if (expandedItems.has(itemId)) {
-    expandedItems.delete(itemId);
-  } else {
-    expandedItems.add(itemId);
-  }
-  render();
-}
-
-function showAssignForm(itemId, maxQty) {
-  const container = document.getElementById(`assign-form-${itemId}`);
-  if (container.innerHTML) { container.innerHTML = ''; return; }
-  const suggestedQty = maxQty > 0 ? maxQty : 1;
-  container.innerHTML = `
-    <div class="assign-form" onclick="event.stopPropagation()">
-      <div><label>Bordadora</label><br><input type="text" id="af-bord-${itemId}" placeholder="Nombre" style="width:110px;"></div>
-      <div><label>Cantidad</label><br><input type="number" id="af-qty-${itemId}" value="${suggestedQty}" min="1" style="width:60px;"></div>
-      <div><label>F. Salida</label><br><input type="date" id="af-salida-${itemId}" style="width:130px;"></div>
-      <div><label>F. Ret. Est.</label><br><input type="date" id="af-ret-${itemId}" style="width:130px;"></div>
-      <div><label>Estado</label><br>
-        <select id="af-estado-${itemId}" style="width:110px;">
-          <option value="pendiente">Pendiente</option>
-          <option value="en_bordado">En bordado</option>
-        </select>
-      </div>
-      <div style="align-self:flex-end;">
-        <button class="btn-primary-small" onclick="event.stopPropagation();saveNewAssignment(${itemId})">Guardar</button>
-      </div>
-    </div>
-  `;
-  document.getElementById(`af-bord-${itemId}`).focus();
-}
-
-async function saveNewAssignment(itemId) {
-  const bordadora = document.getElementById(`af-bord-${itemId}`).value.trim();
-  const cantidad = parseInt(document.getElementById(`af-qty-${itemId}`).value) || 0;
-  const fecha_salida = document.getElementById(`af-salida-${itemId}`).value || null;
-  const fecha_retorno_est = document.getElementById(`af-ret-${itemId}`).value || null;
-  const estado = document.getElementById(`af-estado-${itemId}`).value;
-
-  if (!bordadora) { showToast('Ingresa el nombre de la bordadora', 'error'); return; }
-  if (cantidad <= 0) { showToast('La cantidad debe ser mayor a 0', 'error'); return; }
-
-  const { error } = await sb.from('bordado_assignments').insert({
-    production_item_id: itemId,
-    bordadora,
-    cantidad,
-    fecha_salida,
-    fecha_retorno_est,
-    estado
-  });
-
-  if (error) {
-    showToast('Error al guardar: ' + error.message, 'error');
-    console.error(error);
-  } else {
-    showToast('Asignación creada');
-    await loadData();
-    render();
-  }
-}
-
-async function editAssignField(el, assignId, field, type) {
-  if (el.querySelector('input')) return;
-  event.stopPropagation();
-  const assign = allAssignments.find(a => a.id === assignId);
-  const currentVal = assign ? assign[field] : '';
-  const display = (currentVal === null || currentVal === undefined) ? '' : currentVal;
-
-  el.innerHTML = `<input type="${type}" value="${display}"
-    onclick="event.stopPropagation()"
-    onblur="saveAssignField(this, ${assignId}, '${field}')"
-    onkeydown="event.stopPropagation();if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.dataset.cancel='1';this.blur()}"
-    style="width:${type === 'date' ? '130px' : (type === 'number' ? '50px' : '100px')}"
-  >`;
-  el.querySelector('input').focus();
-}
-
-async function saveAssignField(input, assignId, field) {
-  if (input.dataset.cancel) { render(); return; }
-
-  let value = input.value.trim();
-  if (value === '') value = null;
-  if (field === 'cantidad') value = value ? parseInt(value) : 1;
-
-  const { error } = await sb.from('bordado_assignments').update({ [field]: value }).eq('id', assignId);
-  if (error) {
-    showToast('Error al guardar', 'error');
-    console.error(error);
-  } else {
-    showToast('Guardado');
-    const assign = allAssignments.find(a => a.id === assignId);
-    if (assign) assign[field] = value;
-  }
-  render();
-}
-
-async function editAssignStatus(el, assignId, currentStatus) {
-  if (el.querySelector('select')) return;
-  event.stopPropagation();
-  const options = ['pendiente', 'en_bordado', 'entregado'];
-  const labels = { pendiente: 'Pendiente', en_bordado: 'En bordado', entregado: 'Entregado' };
-
-  el.innerHTML = `<select
-    onclick="event.stopPropagation()"
-    onchange="saveAssignField(this, ${assignId}, 'estado')"
-    onblur="saveAssignField(this, ${assignId}, 'estado')">
-    ${options.map(o => `<option value="${o}" ${o === currentStatus ? 'selected' : ''}>${labels[o]}</option>`).join('')}
-  </select>`;
-  el.querySelector('select').focus();
-}
-
-async function deleteAssignment(assignId) {
-  if (!confirm('¿Eliminar esta asignación?')) return;
-  const { error } = await sb.from('bordado_assignments').delete().eq('id', assignId);
-  if (error) {
-    showToast('Error al eliminar', 'error');
-  } else {
-    showToast('Asignación eliminada');
-    await loadData();
-    render();
-  }
-}
-
-// === CONFECCION VIEW ===
+// ============================================================
+// CONFECCION VIEW
+// ============================================================
 function renderConfeccion() {
   const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
   const statuses = ['pendiente', 'listo_para_confeccion', 'en_confeccion', 'completado'];
@@ -1149,7 +1277,6 @@ function renderConfeccion() {
   if (filters.gender) filtered = filtered.filter(i => i.products?.gender === filters.gender);
   if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
   if (filters.status) filtered = filtered.filter(i => i.sew_status === filters.status);
-  if (filters.shipment) filtered = filtered.filter(i => itemBelongsToShipment(i, filters.shipment));
 
   return `
     <h2 style="font-size:20px;margin-bottom:16px;">Control de Confección</h2>
@@ -1168,38 +1295,26 @@ function renderConfeccion() {
         <option value="">Todos los estados</option>
         ${statuses.map(s => `<option value="${s}" ${filters.status === s ? 'selected' : ''}>${statusLabels[s]}</option>`).join('')}
       </select>
-      ${allShipments.length > 0 ? `
-      <select class="filter-input" id="filter-shipment">
-        <option value="">Todos los envíos</option>
-        ${allShipments.map(s => `<option value="${s.id}" ${filters.shipment == s.id ? 'selected' : ''}>${s.destination === 'Irlanda' ? '🇮🇪' : '🇬🇧'} ${s.name}</option>`).join('')}
-      </select>
-      ` : ''}
       <span style="font-size:13px;color:var(--text-light);">${filtered.length} ítems</span>
     </div>
     <div class="table-container"><div class="table-scroll">
       <table>
         <thead>
           <tr>
-            <th>Código</th><th>Colección</th><th>Tela</th><th>Color</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th><th>Envío</th><th>Bordado OK</th>
+            <th>Código</th><th>Colección</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th><th>OK Bordado</th>
             <th>Tipo</th><th>Asignadas</th><th>F. Inicio</th><th>F. Ent. Est.</th><th>F. Ent. Real</th><th>OK</th><th>Estado</th>
           </tr>
         </thead>
         <tbody>
-          ${filtered.map(item => {
-            const embInfo = getItemBordadoInfo(item);
-            const embOk = embInfo.status === 'entregado';
-            return `
+          ${filtered.map(item => `
             <tr>
               <td><strong>${item.products?.code || ''}</strong></td>
               <td>${item.products?.collection || ''}</td>
-              <td>${item.products?.fabric || '—'}</td>
-              <td>${item.products?.color || '—'}</td>
               <td>${item.products?.garment || ''}</td>
               <td><span class="gender-badge gender-${item.products?.gender === 'Niña' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
               <td>${item.size}</td>
               <td><strong>${item.quantity}</strong></td>
-              <td>${getShipmentTags(item)}</td>
-              <td>${embOk ? '✅' : '⬜'}</td>
+              <td>${item.emb_ok ? '✅' : '⬜'}</td>
               <td>
                 <span class="editable" onclick="editField(this, ${item.id}, 'sewing_type', 'text')">${item.sewing_type || '—'}</span>
               </td>
@@ -1222,15 +1337,17 @@ function renderConfeccion() {
                 <span class="editable" onclick="editStatus(this, ${item.id}, 'sew_status', ['pendiente','listo_para_confeccion','en_confeccion','completado'])"
                 ><span class="badge badge-${item.sew_status}">${statusLabels[item.sew_status] || item.sew_status}</span></span>
               </td>
-            </tr>`;
-          }).join('')}
+            </tr>
+          `).join('')}
         </tbody>
       </table>
     </div></div>
   `;
 }
 
-// === PRODUCTOS VIEW ===
+// ============================================================
+// PRODUCTOS VIEW
+// ============================================================
 function renderProductos() {
   return `
     <h2 style="font-size:20px;margin-bottom:16px;">Catálogo de Productos</h2>
@@ -1264,11 +1381,14 @@ function renderProductos() {
   `;
 }
 
-// === INLINE EDITING (production_items) ===
+// ============================================================
+// INLINE EDITING
+// ============================================================
 async function editField(el, itemId, field, type) {
   if (el.querySelector('input')) return;
   const currentVal = el.textContent.trim();
   const display = currentVal === '—' ? '' : currentVal;
+
   el.innerHTML = `<input type="${type}" value="${display}"
     onblur="saveField(this, ${itemId}, '${field}')"
     onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.dataset.cancel='1';this.blur()}"
@@ -1277,17 +1397,24 @@ async function editField(el, itemId, field, type) {
 }
 
 async function saveField(input, itemId, field) {
-  if (input.dataset.cancel) { await loadData(); render(); return; }
+  if (input.dataset.cancel) {
+    await loadData();
+    render();
+    return;
+  }
+
   let value = input.value.trim();
   if (value === '') value = null;
   if (field.includes('qty') || field.includes('assigned')) value = value ? parseInt(value) : 0;
 
-  const { error } = await sb.from('production_items').update({ [field]: value }).eq('id', itemId);
+  const { error } = await supabase.from('production_items').update({ [field]: value }).eq('id', itemId);
+
   if (error) {
     showToast('Error al guardar', 'error');
     console.error(error);
   } else {
     showToast('Guardado');
+    // Update local data
     const item = allItems.find(i => i.id === itemId);
     if (item) item[field] = value;
   }
@@ -1298,7 +1425,7 @@ async function editStatus(el, itemId, field, options) {
   if (el.querySelector('select')) return;
   const labels = {
     sin_asignar: 'Sin asignar', en_bordado: 'En bordado', completado: 'Completado', correccion: 'Corrección',
-    pendiente: 'Pendiente', listo_para_confeccion: 'Listo para confección', en_confeccion: 'En confección', entregado: 'Entregado'
+    pendiente: 'Pendiente', listo_para_confeccion: 'Listo para confección', en_confeccion: 'En confección'
   };
   const item = allItems.find(i => i.id === itemId);
   const current = item ? item[field] : '';
@@ -1311,7 +1438,7 @@ async function editStatus(el, itemId, field, options) {
 
 async function toggleBool(itemId, field, currentVal) {
   const newVal = !currentVal;
-  const { error } = await sb.from('production_items').update({ [field]: newVal }).eq('id', itemId);
+  const { error } = await supabase.from('production_items').update({ [field]: newVal }).eq('id', itemId);
   if (error) {
     showToast('Error al guardar', 'error');
   } else {
@@ -1322,25 +1449,36 @@ async function toggleBool(itemId, field, currentVal) {
   render();
 }
 
-// === FILTER LISTENERS ===
+// ============================================================
+// FILTERS LISTENERS
+// ============================================================
 function attachListeners() {
   const searchEl = document.getElementById('filter-search');
   const genderEl = document.getElementById('filter-gender');
   const collectionEl = document.getElementById('filter-collection');
   const statusEl = document.getElementById('filter-status');
-  const shipmentEl = document.getElementById('filter-shipment');
 
-  if (searchEl) searchEl.addEventListener('input', (e) => { filters.search = e.target.value; render(); });
-  if (genderEl) genderEl.addEventListener('change', (e) => { filters.gender = e.target.value; render(); });
-  if (collectionEl) collectionEl.addEventListener('change', (e) => { filters.collection = e.target.value; render(); });
-  if (statusEl) statusEl.addEventListener('change', (e) => { filters.status = e.target.value; render(); });
-  if (shipmentEl) shipmentEl.addEventListener('change', (e) => { filters.shipment = e.target.value; render(); });
+  if (searchEl) {
+    searchEl.addEventListener('input', (e) => { filters.search = e.target.value; render(); });
+  }
+  if (genderEl) {
+    genderEl.addEventListener('change', (e) => { filters.gender = e.target.value; render(); });
+  }
+  if (collectionEl) {
+    collectionEl.addEventListener('change', (e) => { filters.collection = e.target.value; render(); });
+  }
+  if (statusEl) {
+    statusEl.addEventListener('change', (e) => { filters.status = e.target.value; render(); });
+  }
 }
 
-// === TOAST ===
+// ============================================================
+// TOAST NOTIFICATIONS
+// ============================================================
 function showToast(message, type = 'success') {
   const existing = document.querySelector('.toast');
   if (existing) existing.remove();
+
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
@@ -1348,7 +1486,9 @@ function showToast(message, type = 'success') {
   setTimeout(() => toast.remove(), 2500);
 }
 
-// === START ===
+// ============================================================
+// START
+// ============================================================
 init();
 </script>
 </body>
