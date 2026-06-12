@@ -1393,7 +1393,7 @@ function renderGuiaPayment() {
   </div>`;
 
   html += `<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
-    <button class="btn-action" onclick="printGuia(${g.id});" style="background:var(--neutral-light);color:var(--text);">🖨 Imprimir</button>
+    <button class="btn-action" onclick="printLiquidacion(${g.id});" style="background:var(--neutral-light);color:var(--text);">🖨 Imprimir Liquidación</button>
     ${g.status !== 'pagada' ? `<button class="btn-action" onclick="markPaid(${g.id});" style="background:var(--success);color:white;">✓ Marcar como pagada</button>` : '<span class="badge badge-completado" style="padding:10px 20px;font-size:14px;">✓ Pagada</span>'}
   </div>`;
 
@@ -1538,6 +1538,168 @@ function printGuia(guiaId) {
   w.document.write(printHtml);
   w.document.close();
   w.print();
+}
+
+function printLiquidacion(guiaId) {
+  const g = guias.find(gg => gg.id === guiaId);
+  if (!g) return;
+  const gItems_local = guiaItems.filter(gi => gi.guia_id === g.id);
+  const worker = workers.find(w => w.id === g.worker_id);
+  const typeLabel = g.type === 'bordado' ? 'Bordado' : 'Confección';
+  const workerLabel = g.type === 'bordado' ? 'Bordadora' : 'Costurera';
+  const today = new Date().toLocaleDateString('es', {day:'2-digit',month:'long',year:'numeric'});
+
+  const okItems = gItems_local.filter(gi => (gi.qty_returned_ok || 0) > 0);
+  const corrItems = gItems_local.filter(gi => (gi.qty_correction || 0) > 0);
+  const discItems = gItems_local.filter(gi => (gi.qty_discount || 0) > 0);
+
+  let totalPay = 0, totalDisc = 0, totalPiezasOk = 0, totalPiezasCorr = 0, totalPiezasDisc = 0;
+
+  let html = `<html><head><title>Liquidación ${g.guia_number}</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:30px 40px;font-size:12px;color:#222;}
+      h1{font-size:16px;margin:0;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+      h2{font-size:13px;margin:24px 0 8px;font-weight:700;border-bottom:2px solid #333;padding-bottom:4px;}
+      .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #333;padding-bottom:12px;margin-bottom:16px;}
+      .header-left{display:flex;flex-direction:column;gap:2px;}
+      .header-right{text-align:right;font-size:11px;color:#555;}
+      .doc-title{font-size:18px;font-weight:700;text-align:center;margin:16px 0;padding:8px;background:#f5f5f5;border:1px solid #ddd;}
+      .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;margin-bottom:16px;font-size:12px;}
+      .meta-grid .label{font-weight:600;color:#555;}
+      table{width:100%;border-collapse:collapse;margin-top:6px;margin-bottom:16px;}
+      th,td{border:1px solid #ccc;padding:5px 8px;text-align:left;font-size:11px;}
+      th{background:#f0f0f0;font-weight:700;text-transform:uppercase;font-size:10px;}
+      .total-row{font-weight:700;background:#f9f9f9;}
+      .section-ok h2{color:#1a7a3a;}
+      .section-corr h2{color:#b45309;}
+      .section-disc h2{color:#c62828;}
+      .disc-row{color:#c62828;}
+      .summary-box{margin-top:20px;border:2px solid #333;padding:16px;display:flex;justify-content:space-between;align-items:center;}
+      .summary-box .total-label{font-size:14px;font-weight:700;}
+      .summary-box .total-amount{font-size:22px;font-weight:700;}
+      .signatures{margin-top:50px;display:flex;justify-content:space-between;page-break-inside:avoid;}
+      .sig-block{width:220px;text-align:center;}
+      .sig-line{border-top:1px solid #333;margin-top:50px;padding-top:6px;font-size:11px;}
+      .sig-name{font-weight:600;font-size:12px;}
+      .sig-role{color:#666;font-size:11px;}
+      .note-box{margin-top:24px;padding:12px;border:1px dashed #999;background:#fffde7;font-size:11px;page-break-inside:avoid;}
+      .note-box strong{display:block;margin-bottom:4px;}
+      @media print{body{padding:20px 30px;}.no-print{display:none;}}
+    </style></head><body>`;
+
+  // Header
+  html += `<div class="header">
+    <div class="header-left">
+      <h1>Innova Sourcing</h1>
+      <span style="font-size:11px;color:#666;">Control de Producción — FW26-27</span>
+    </div>
+    <div class="header-right">
+      Fecha: ${today}<br>
+      Documento: LIQ-${g.guia_number}
+    </div>
+  </div>`;
+
+  // Document title
+  html += `<div class="doc-title">LIQUIDACIÓN DE PAGO</div>`;
+
+  // Meta info
+  const dateSent = g.date_sent ? new Date(g.date_sent + 'T12:00:00').toLocaleDateString('es',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+  const dateReturn = g.date_returned || g.updated_at ? new Date((g.date_returned || g.updated_at).split('T')[0] + 'T12:00:00').toLocaleDateString('es',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+
+  html += `<div class="meta-grid">
+    <div><span class="label">Guía ref.:</span> ${g.guia_number}</div>
+    <div><span class="label">Tipo:</span> ${typeLabel}</div>
+    <div><span class="label">${workerLabel}:</span> ${worker ? worker.name : '—'}</div>
+    <div><span class="label">Teléfono:</span> ${worker?.phone || '—'}</div>
+    <div><span class="label">Fecha envío:</span> ${dateSent}</div>
+    <div><span class="label">Fecha retorno:</span> ${dateReturn}</div>
+  </div>`;
+
+  // Section 1: OK items (paid)
+  html += `<div class="section-ok"><h2>✓ PIEZAS APROBADAS — Se pagan</h2></div>`;
+  html += `<table><thead><tr><th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Talla</th><th>Cant.</th><th>Precio/u</th><th style="text-align:right">Subtotal</th></tr></thead><tbody>`;
+  okItems.forEach(gi => {
+    const p = gi.production_items?.products || {};
+    const pi = gi.production_items || {};
+    const price = gi.unit_price || 0;
+    const sub = (gi.qty_returned_ok || 0) * price;
+    totalPay += sub;
+    totalPiezasOk += (gi.qty_returned_ok || 0);
+    html += `<tr><td>${p.code||''}</td><td>${p.collection||''}</td><td>${p.garment||''}</td><td>${p.fabric||'—'}</td><td>${p.color||'—'}</td><td>${pi.size||''}</td><td style="text-align:center">${gi.qty_returned_ok}</td><td>S/ ${parseFloat(price).toFixed(2)}</td><td style="text-align:right">S/ ${sub.toFixed(2)}</td></tr>`;
+  });
+  html += `<tr class="total-row"><td colspan="6" style="text-align:right">Subtotal aprobado</td><td style="text-align:center">${totalPiezasOk}</td><td></td><td style="text-align:right">S/ ${totalPay.toFixed(2)}</td></tr>`;
+  html += `</tbody></table>`;
+
+  // Section 2: Corrections (informational)
+  if (corrItems.length > 0) {
+    html += `<div class="section-corr"><h2>⟳ CORRECCIONES — Devueltas para reproceso</h2></div>`;
+    html += `<table><thead><tr><th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Talla</th><th>Cant.</th><th colspan="2">Observación</th></tr></thead><tbody>`;
+    corrItems.forEach(gi => {
+      const p = gi.production_items?.products || {};
+      const pi = gi.production_items || {};
+      totalPiezasCorr += (gi.qty_correction || 0);
+      html += `<tr style="color:#b45309;"><td>${p.code||''}</td><td>${p.collection||''}</td><td>${p.garment||''}</td><td>${p.fabric||'—'}</td><td>${p.color||'—'}</td><td>${pi.size||''}</td><td style="text-align:center">${gi.qty_correction}</td><td colspan="2">Pendiente de reproceso</td></tr>`;
+    });
+    html += `<tr class="total-row"><td colspan="6" style="text-align:right">Total correcciones</td><td style="text-align:center">${totalPiezasCorr}</td><td colspan="2"></td></tr>`;
+    html += `</tbody></table>`;
+  }
+
+  // Section 3: Discounts (not paid)
+  if (discItems.length > 0) {
+    html += `<div class="section-disc"><h2>✕ DESCUENTOS — No se pagan</h2></div>`;
+    html += `<table><thead><tr><th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Talla</th><th>Cant.</th><th>Precio/u</th><th style="text-align:right">Monto desc.</th></tr></thead><tbody>`;
+    discItems.forEach(gi => {
+      const p = gi.production_items?.products || {};
+      const pi = gi.production_items || {};
+      const price = gi.unit_price || 0;
+      const sub = (gi.qty_discount || 0) * price;
+      totalDisc += sub;
+      totalPiezasDisc += (gi.qty_discount || 0);
+      html += `<tr class="disc-row"><td>${p.code||''}</td><td>${p.collection||''}</td><td>${p.garment||''}</td><td>${p.fabric||'—'}</td><td>${p.color||'—'}</td><td>${pi.size||''}</td><td style="text-align:center">${gi.qty_discount}</td><td>S/ ${parseFloat(price).toFixed(2)}</td><td style="text-align:right">-S/ ${sub.toFixed(2)}</td></tr>`;
+    });
+    html += `<tr class="total-row"><td colspan="6" style="text-align:right;color:#c62828;">Total descuentos</td><td style="text-align:center;color:#c62828;">${totalPiezasDisc}</td><td></td><td style="text-align:right;color:#c62828;">-S/ ${totalDisc.toFixed(2)}</td></tr>`;
+    html += `</tbody></table>`;
+  }
+
+  // Summary box
+  html += `<div class="summary-box">
+    <div>
+      <div style="font-size:11px;color:#555;margin-bottom:2px;">Piezas OK: ${totalPiezasOk}${totalPiezasCorr > 0 ? ` · Correcciones: ${totalPiezasCorr}` : ''}${totalPiezasDisc > 0 ? ` · Descuentos: ${totalPiezasDisc}` : ''}</div>
+      <div class="total-label">TOTAL A PAGAR</div>
+    </div>
+    <div class="total-amount">S/ ${totalPay.toFixed(2)}</div>
+  </div>`;
+
+  // RxH note
+  html += `<div class="note-box">
+    <strong>Instrucciones para el pago:</strong>
+    Con la presente liquidación, favor emitir su <strong>Recibo por Honorarios</strong> por el monto de <strong>S/ ${totalPay.toFixed(2)}</strong> a nombre de Innova Sourcing.<br>
+    El pago se procesará una vez recibido el recibo correspondiente.
+  </div>`;
+
+  // Signatures
+  html += `<div class="signatures">
+    <div class="sig-block">
+      <div class="sig-line">
+        <div class="sig-name">${worker ? worker.name : '________________'}</div>
+        <div class="sig-role">${workerLabel}</div>
+        <div style="margin-top:4px;font-size:10px;color:#999;">Doy conformidad a esta liquidación</div>
+      </div>
+    </div>
+    <div class="sig-block">
+      <div class="sig-line">
+        <div class="sig-name">Innova Sourcing</div>
+        <div class="sig-role">Responsable de Producción</div>
+      </div>
+    </div>
+  </div>`;
+
+  html += `</body></html>`;
+
+  const w2 = window.open('', '_blank');
+  w2.document.write(html);
+  w2.document.close();
+  w2.print();
 }
 
 
