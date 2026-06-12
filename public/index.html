@@ -377,6 +377,11 @@ function setupTabs() {
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentTab = tab.dataset.tab;
+      if (tab.dataset.tab === 'guias-bordado' || tab.dataset.tab === 'guias-confeccion') {
+        guiaView = 'list';
+        currentGuiaId = null;
+        selectedPIIds.clear();
+      }
       render();
     });
   });
@@ -389,8 +394,8 @@ function render() {
   const content = document.getElementById('content');
   switch (currentTab) {
     case 'dashboard': content.innerHTML = renderDashboard(); break;
-    case 'guias-bordado': guiaType = 'bordado'; guiaView = 'list'; content.innerHTML = renderGuias(); break;
-    case 'guias-confeccion': guiaType = 'confeccion'; guiaView = 'list'; content.innerHTML = renderGuias(); break;
+    case 'guias-bordado': guiaType = 'bordado'; content.innerHTML = renderGuias(); break;
+    case 'guias-confeccion': guiaType = 'confeccion'; content.innerHTML = renderGuias(); break;
     case 'bordado': content.innerHTML = renderBordado(); break;
     case 'confeccion': content.innerHTML = renderConfeccion(); break;
     case 'productos': content.innerHTML = renderProductos(); break;
