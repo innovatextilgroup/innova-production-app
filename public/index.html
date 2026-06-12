@@ -982,9 +982,9 @@ function renderGuiaDetail() {
       <td>${p.color || '—'}</td>
       <td>${pi.size || ''}</td>
       <td>${gi.qty_sent}</td>
-      <td>${isActive ? `<input type="number" class="filter-input return-ok" data-gi-id="${gi.id}" min="0" max="${gi.qty_sent}" value="${gi.qty_returned_ok || 0}" style="width:60px;text-align:center;" />` : gi.qty_returned_ok || 0}</td>
-      <td>${isActive ? `<input type="number" class="filter-input return-corr" data-gi-id="${gi.id}" min="0" max="${gi.qty_sent}" value="${gi.qty_correction || 0}" style="width:60px;text-align:center;" />` : gi.qty_correction || 0}</td>
-      <td>${isActive ? `<input type="number" class="filter-input return-disc" data-gi-id="${gi.id}" min="0" max="${gi.qty_sent}" value="${gi.qty_discount || 0}" style="width:60px;text-align:center;" />` : gi.qty_discount || 0}</td>
+      <td>${isActive ? `<input type="number" class="filter-input return-ok" data-gi-id="${gi.id}" data-max="${gi.qty_sent}" min="0" max="${gi.qty_sent}" value="${gi.qty_returned_ok || 0}" style="width:60px;text-align:center;" oninput="validateReturnRow(this)" />` : gi.qty_returned_ok || 0}</td>
+      <td>${isActive ? `<input type="number" class="filter-input return-corr" data-gi-id="${gi.id}" data-max="${gi.qty_sent}" min="0" max="${gi.qty_sent}" value="${gi.qty_correction || 0}" style="width:60px;text-align:center;" oninput="validateReturnRow(this)" />` : gi.qty_correction || 0}</td>
+      <td>${isActive ? `<input type="number" class="filter-input return-disc" data-gi-id="${gi.id}" data-max="${gi.qty_sent}" min="0" max="${gi.qty_sent}" value="${gi.qty_discount || 0}" style="width:60px;text-align:center;" oninput="validateReturnRow(this)" />` : gi.qty_discount || 0}</td>
     </tr>`;
   });
 
@@ -1000,21 +1000,89 @@ function renderGuiaDetail() {
   return html;
 }
 
+function validateReturnRow(input) {
+  const giId = input.dataset.giId;
+  const maxSent = parseInt(input.dataset.max);
+  const okEl = document.querySelector(`.return-ok[data-gi-id="${giId}"]`);
+  const corrEl = document.querySelector(`.return-corr[data-gi-id="${giId}"]`);
+  const discEl = document.querySelector(`.return-disc[data-gi-id="${giId}"]`);
+
+  // Clamp current input to 0..maxSent
+  let val = parseInt(input.value) || 0;
+  if (val < 0) val = 0;
+  if (val > maxSent) val = maxSent;
+  input.value = val;
+
+  const ok = parseInt(okEl?.value) || 0;
+  const corr = parseInt(corrEl?.value) || 0;
+  const disc = parseInt(discEl?.value) || 0;
+  const total = ok + corr + disc;
+
+  const row = input.closest('tr');
+  if (total > maxSent) {
+    // Reduce the OTHER fields proportionally — last-edited field keeps its value
+    const excess = total - maxSent;
+    if (input.classList.contains('return-ok')) {
+      // User changed OK, reduce disc first, then corr
+      let remaining = excess;
+      const newDisc = Math.max(0, disc - remaining);
+      remaining -= (disc - newDisc);
+      const newCorr = Math.max(0, corr - remaining);
+      discEl.value = newDisc;
+      corrEl.value = newCorr;
+    } else if (input.classList.contains('return-corr')) {
+      let remaining = excess;
+      const newDisc = Math.max(0, disc - remaining);
+      remaining -= (disc - newDisc);
+      const newOk = Math.max(0, ok - remaining);
+      discEl.value = newDisc;
+      okEl.value = newOk;
+    } else {
+      let remaining = excess;
+      const newCorr = Math.max(0, corr - remaining);
+      remaining -= (corr - newCorr);
+      const newOk = Math.max(0, ok - remaining);
+      corrEl.value = newCorr;
+      okEl.value = newOk;
+    }
+    row.style.background = '';
+  } else {
+    row.style.background = '';
+  }
+
+  // Update dynamic max on each field
+  const okNow = parseInt(okEl?.value) || 0;
+  const corrNow = parseInt(corrEl?.value) || 0;
+  const discNow = parseInt(discEl?.value) || 0;
+  okEl.max = maxSent - corrNow - discNow;
+  corrEl.max = maxSent - okNow - discNow;
+  discEl.max = maxSent - okNow - corrNow;
+}
+
 async function saveGuiaReturn(guiaId) {
   const okInputs = document.querySelectorAll('.return-ok');
-  const corrInputs = document.querySelectorAll('.return-corr');
-  const discInputs = document.querySelectorAll('.return-disc');
 
   const updates = [];
+  let hasError = false;
   okInputs.forEach(input => {
     const giId = parseInt(input.dataset.giId);
+    const maxSent = parseInt(input.dataset.max);
     const ok = parseInt(input.value) || 0;
     const corrEl = document.querySelector(`.return-corr[data-gi-id="${giId}"]`);
     const discEl = document.querySelector(`.return-disc[data-gi-id="${giId}"]`);
     const corr = parseInt(corrEl?.value) || 0;
     const disc = parseInt(discEl?.value) || 0;
+
+    if (ok + corr + disc > maxSent) {
+      hasError = true;
+    }
     updates.push({ id: giId, qty_returned_ok: ok, qty_correction: corr, qty_discount: disc });
   });
+
+  if (hasError) {
+    showToast('Error: OK + Corrección + Descuento no puede exceder las piezas enviadas', 'error');
+    return;
+  }
 
   for (const u of updates) {
     await sb.from('guia_items').update({
