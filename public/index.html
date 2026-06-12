@@ -951,6 +951,7 @@ function renderGuiaDetail() {
   <p style="color:var(--text-light);font-size:14px;margin-bottom:20px;">
     ${worker ? worker.name : '—'} · Enviada ${g.date_sent ? new Date(g.date_sent + 'T12:00:00').toLocaleDateString('es') : '—'}
     ${g.date_expected ? ` · Retorno esperado ${new Date(g.date_expected + 'T12:00:00').toLocaleDateString('es')}` : ''}
+    ${g.date_returned ? ` · <span style="color:var(--success);font-weight:600;">Retornó ${new Date(g.date_returned + 'T12:00:00').toLocaleDateString('es')}</span>` : ''}
     ${g.notes ? ` · ${g.notes}` : ''}
   </p>`;
 
@@ -1102,7 +1103,15 @@ async function saveGuiaReturn(guiaId) {
   if (totalProcessed + totalCorr >= totalSent && totalCorr === 0) newStatus = 'completada';
   else if (totalProcessed + totalCorr > 0) newStatus = 'retorno_parcial';
 
-  await sb.from('guias').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', guiaId);
+  // Auto-fill date_returned when items come back for the first time
+  const currentGuia = guias.find(gg => gg.id === guiaId);
+  const guiaUpdate = { status: newStatus, updated_at: new Date().toISOString() };
+  if (!currentGuia.date_returned && (totalProcessed + totalCorr > 0)) {
+    const today = new Date().toISOString().split('T')[0];
+    guiaUpdate.date_returned = today;
+  }
+
+  await sb.from('guias').update(guiaUpdate).eq('id', guiaId);
 
   showToast('Retorno guardado');
   await loadData();
@@ -1605,7 +1614,7 @@ function printLiquidacion(guiaId) {
 
   // Meta info
   const dateSent = g.date_sent ? new Date(g.date_sent + 'T12:00:00').toLocaleDateString('es',{day:'2-digit',month:'short',year:'numeric'}) : '—';
-  const dateReturn = g.date_returned || g.updated_at ? new Date((g.date_returned || g.updated_at).split('T')[0] + 'T12:00:00').toLocaleDateString('es',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+  const dateReturn = g.date_returned ? new Date(g.date_returned + 'T12:00:00').toLocaleDateString('es',{day:'2-digit',month:'short',year:'numeric'}) : '—';
 
   html += `<div class="meta-grid">
     <div><span class="label">Guía ref.:</span> ${g.guia_number}</div>
@@ -1689,7 +1698,7 @@ function printLiquidacion(guiaId) {
     </div>
     <div class="sig-block">
       <div class="sig-line">
-        <div class="sig-name">Innova Textil Group</div>
+        <div class="sig-name">IBTEX GROUP S.A.C.</div>
         <div class="sig-role">Responsable de Producción</div>
       </div>
     </div>
