@@ -168,6 +168,10 @@
     .badge-listo_para_confeccion { background: var(--warning-light); color: var(--warning); }
     .badge-en_confeccion { background: var(--blue-light); color: var(--blue); }
     .badge-en_proceso { background: var(--warning-light); color: var(--warning); }
+    .badge-enviada { background: var(--blue-light); color: var(--blue); }
+    .badge-retorno_parcial { background: var(--warning-light); color: var(--warning); }
+    .badge-pagada { background: #e8f5e9; color: #2e7d32; }
+    .badge-cancelada { background: var(--neutral-light); color: var(--neutral); text-decoration: line-through; }
 
     /* GENDER BADGES */
     .gender-badge {
@@ -636,7 +640,7 @@ function renderGuiaList() {
           <span class="badge ${getGuiaStatusClass(g.status)}">${getGuiaStatusLabel(g.status)}</span>
           ${overdue ? '<span class="badge badge-correccion">⚠ Atrasada</span>' : ''}
         </div>
-        <span style="font-size:13px;color:var(--text-light);">${g.date_sent ? new Date(g.date_sent).toLocaleDateString('es') : 'Sin enviar'}</span>
+        <span style="font-size:13px;color:var(--text-light);">${g.date_sent ? new Date(g.date_sent + 'T12:00:00').toLocaleDateString('es') : 'Sin enviar'}</span>
       </div>
       <div style="font-size:13px;color:var(--text-light);">
         ${worker ? worker.name : 'Sin asignar'} · ${collections.join(', ')} · ${totalSent} piezas
@@ -762,7 +766,7 @@ function renderGuiaCreateStep2() {
       <td>${pi.size}</td>
       <td>${avail}</td>
       <td><input type="number" class="filter-input guia-qty-input" data-pi-id="${pi.id}" data-max="${avail}" min="1" max="${avail}" value="${avail}" style="width:70px;text-align:center;" /></td>
-      <td style="color:var(--text-light);">${price ? `S/ ${parseFloat(price).toFixed(2)}` : '—'}</td>
+      <td><input type="number" class="filter-input guia-price-input" data-pi-id="${pi.id}" step="0.01" min="0" value="${price}" placeholder="0.00" style="width:80px;text-align:center;" /></td>
     </tr>`;
   });
 
@@ -803,15 +807,14 @@ async function saveNewGuia() {
   qtyInputs.forEach(input => {
     const piId = parseInt(input.dataset.piId);
     const qty = parseInt(input.value);
-    const pi = allItems.find(i => i.id === piId);
-    const p = pi?.products || {};
-    const price = guiaType === 'bordado' ? p.emb_price : p.sew_price;
+    const priceInput = document.querySelector(`.guia-price-input[data-pi-id="${piId}"]`);
+    const price = priceInput ? parseFloat(priceInput.value) || null : null;
     if (qty > 0) {
       items.push({
         guia_id: newGuia.id,
         production_item_id: piId,
         qty_sent: qty,
-        unit_price: price || null
+        unit_price: price
       });
     }
   });
@@ -854,8 +857,8 @@ function renderGuiaDetail() {
     </div>
   </div>
   <p style="color:var(--text-light);font-size:14px;margin-bottom:20px;">
-    ${worker ? worker.name : '—'} · Enviada ${g.date_sent ? new Date(g.date_sent).toLocaleDateString('es') : '—'}
-    ${g.date_expected ? ` · Retorno esperado ${new Date(g.date_expected).toLocaleDateString('es')}` : ''}
+    ${worker ? worker.name : '—'} · Enviada ${g.date_sent ? new Date(g.date_sent + 'T12:00:00').toLocaleDateString('es') : '—'}
+    ${g.date_expected ? ` · Retorno esperado ${new Date(g.date_expected + 'T12:00:00').toLocaleDateString('es')}` : ''}
     ${g.notes ? ` · ${g.notes}` : ''}
   </p>`;
 
@@ -1124,15 +1127,8 @@ async function toggleWorkerActive(workerId, active) {
 }
 
 function toggleSelectAll(checked) {
-  const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
   selectedPIIds.clear();
   if (checked) {
-    checkboxes.forEach(cb => {
-      const piId = parseInt(cb.closest('tr').querySelector('.filter-input, input[type="checkbox"]')?.getAttribute('onchange')?.match(/\d+/)?.[0]);
-      if (!isNaN(piId)) selectedPIIds.add(piId);
-      cb.checked = true;
-    });
-    // Better approach: get from filtered items
     const availableItems = allItems.filter(pi => getAvailableQty(pi.id, guiaType) > 0);
     let filtered = availableItems;
     if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
@@ -1193,29 +1189,71 @@ function printGuia(guiaId) {
 
 // BORDADO VIEW
 // ============================================================
+function getGuiaInfoForItem(piId, type) {
+  const activeGI = guiaItems.filter(gi => {
+    if (gi.production_item_id !== piId) return false;
+    const g = guias.find(gg => gg.id === gi.guia_id);
+    return g && g.type === type && g.status !== 'cancelada';
+  });
+  if (activeGI.length === 0) {
+    return { status: 'sin_asignar', worker: '—', qtySent: 0, qtyOk: 0, qtyCorr: 0, qtyDisc: 0, dateSent: null, dateExpected: null, guiaNumbers: [] };
+  }
+  const totalSent = activeGI.reduce((s, gi) => s + gi.qty_sent, 0);
+  const totalOk = activeGI.reduce((s, gi) => s + (gi.qty_returned_ok || 0), 0);
+  const totalCorr = activeGI.reduce((s, gi) => s + (gi.qty_correction || 0), 0);
+  const totalDisc = activeGI.reduce((s, gi) => s + (gi.qty_discount || 0), 0);
+  const latestGI = activeGI[activeGI.length - 1];
+  const latestGuia = guias.find(g => g.id === latestGI.guia_id);
+  const worker = latestGuia ? workers.find(w => w.id === latestGuia.worker_id) : null;
+  let status = 'en_bordado';
+  if (totalCorr > 0) status = 'correccion';
+  if (totalOk + totalDisc >= totalSent && totalCorr === 0) status = 'completado';
+  const nums = [...new Set(activeGI.map(gi => { const g = guias.find(gg => gg.id === gi.guia_id); return g?.guia_number; }).filter(Boolean))];
+  return { status, worker: worker?.name || '—', qtySent: totalSent, qtyOk: totalOk, qtyCorr: totalCorr, qtyDisc: totalDisc, dateSent: latestGuia?.date_sent, dateExpected: latestGuia?.date_expected, guiaNumbers: nums };
+}
+
+function formatDateSafe(d) { return d ? new Date(d + 'T12:00:00').toLocaleDateString('es') : '—'; }
+
 function renderBordado() {
   const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
   const statuses = ['sin_asignar', 'en_bordado', 'completado', 'correccion'];
   const statusLabels = { sin_asignar: 'Sin asignar', en_bordado: 'En bordado', completado: 'Completado', correccion: 'Corrección' };
 
-  let filtered = [...allItems];
+  // Enrich items with guía data
+  const enriched = allItems.map(item => {
+    const info = getGuiaInfoForItem(item.id, 'bordado');
+    return { ...item, _emb: info };
+  });
+
+  let filtered = [...enriched];
   if (filters.search) {
     const s = filters.search.toLowerCase();
     filtered = filtered.filter(i =>
       i.products?.code?.toLowerCase().includes(s) ||
       i.products?.collection?.toLowerCase().includes(s) ||
       i.products?.garment?.toLowerCase().includes(s) ||
-      (i.embroiderer || '').toLowerCase().includes(s)
+      i._emb.worker.toLowerCase().includes(s)
     );
   }
   if (filters.gender) filtered = filtered.filter(i => i.products?.gender === filters.gender);
   if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
-  if (filters.status) filtered = filtered.filter(i => i.emb_status === filters.status);
+  if (filters.status) filtered = filtered.filter(i => i._emb.status === filters.status);
+
+  const totalItems = filtered.length;
+  const totalEnBordado = filtered.filter(i => i._emb.status === 'en_bordado').length;
+  const totalCompletado = filtered.filter(i => i._emb.status === 'completado').length;
+  const totalCorreccion = filtered.filter(i => i._emb.status === 'correccion').length;
 
   return `
     <h2 style="font-size:20px;margin-bottom:16px;">Control de Bordado</h2>
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">
+      <div class="stat-card"><div class="label">Sin asignar</div><div class="value">${totalItems - totalEnBordado - totalCompletado - totalCorreccion}</div></div>
+      <div class="stat-card"><div class="label">En bordado</div><div class="value" style="color:var(--primary)">${totalEnBordado}</div></div>
+      <div class="stat-card"><div class="label">Completado</div><div class="value" style="color:var(--success)">${totalCompletado}</div></div>
+      <div class="stat-card"><div class="label">Corrección</div><div class="value" style="color:var(--danger)">${totalCorreccion}</div></div>
+    </div>
     <div class="filters">
-      <input class="filter-input" type="text" placeholder="Buscar código, colección..." id="filter-search" value="${filters.search}" style="width:220px;">
+      <input class="filter-input" type="text" placeholder="Buscar código, colección, bordadora..." id="filter-search" value="${filters.search}" style="width:260px;">
       <select class="filter-input" id="filter-gender">
         <option value="">Todos los géneros</option>
         <option value="Niña" ${filters.gender === 'Niña' ? 'selected' : ''}>Niña</option>
@@ -1236,42 +1274,29 @@ function renderBordado() {
         <thead>
           <tr>
             <th>Código</th><th>Colección</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th>
-            <th>Bordadora</th><th>Asignadas</th><th>F. Salida</th><th>F. Ret. Est.</th><th>F. Ret. Real</th><th>OK</th><th>Estado</th>
+            <th>Guía</th><th>Bordadora</th><th>Enviadas</th><th>F. Salida</th><th>F. Ret. Est.</th><th>OK</th><th>Correc.</th><th>Estado</th>
           </tr>
         </thead>
         <tbody>
-          ${filtered.map(item => `
-            <tr>
+          ${filtered.map(item => {
+            const e = item._emb;
+            return `<tr>
               <td><strong>${item.products?.code || ''}</strong></td>
               <td>${item.products?.collection || ''}</td>
               <td>${item.products?.garment || ''}</td>
               <td><span class="gender-badge gender-${item.products?.gender === 'Niña' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
               <td>${item.size}</td>
               <td><strong>${item.quantity}</strong></td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'embroiderer', 'text')">${item.embroiderer || '—'}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'emb_qty_assigned', 'number')">${item.emb_qty_assigned || 0}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_sent', 'date')">${item.emb_date_sent || '—'}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_expected', 'date')">${item.emb_date_expected || '—'}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'emb_date_returned', 'date')">${item.emb_date_returned || '—'}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="toggleBool(${item.id}, 'emb_ok', ${item.emb_ok})">${item.emb_ok ? '✅' : '—'}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="editStatus(this, ${item.id}, 'emb_status', ['sin_asignar','en_bordado','completado','correccion'])"
-                ><span class="badge badge-${item.emb_status}">${statusLabels[item.emb_status] || item.emb_status}</span></span>
-              </td>
-            </tr>
-          `).join('')}
+              <td style="font-size:12px;">${e.guiaNumbers.join(', ') || '—'}</td>
+              <td>${e.worker}</td>
+              <td>${e.qtySent || '—'}</td>
+              <td>${formatDateSafe(e.dateSent)}</td>
+              <td>${formatDateSafe(e.dateExpected)}</td>
+              <td style="color:var(--success);font-weight:600">${e.qtyOk || '—'}</td>
+              <td style="color:${e.qtyCorr > 0 ? 'var(--danger)' : 'var(--text-light)'};font-weight:${e.qtyCorr > 0 ? '600' : 'normal'}">${e.qtyCorr || '—'}</td>
+              <td><span class="badge badge-${e.status === 'en_bordado' ? 'en_bordado' : e.status === 'completado' ? 'completado' : e.status === 'correccion' ? 'correccion' : 'sin_asignar'}">${statusLabels[e.status]}</span></td>
+            </tr>`;
+          }).join('')}
         </tbody>
       </table>
     </div></div>
@@ -1283,26 +1308,45 @@ function renderBordado() {
 // ============================================================
 function renderConfeccion() {
   const collections = [...new Set(allItems.map(i => i.products?.collection))].filter(Boolean).sort();
-  const statuses = ['pendiente', 'listo_para_confeccion', 'en_confeccion', 'completado'];
-  const statusLabels = { pendiente: 'Pendiente', listo_para_confeccion: 'Listo para confección', en_confeccion: 'En confección', completado: 'Completado' };
+  const statuses = ['sin_asignar', 'en_confeccion', 'completado', 'correccion'];
+  const statusLabels = { sin_asignar: 'Sin asignar', en_confeccion: 'En confección', completado: 'Completado', correccion: 'Corrección' };
 
-  let filtered = [...allItems];
+  // Enrich with bordado + confección guía data
+  const enriched = allItems.map(item => {
+    const embInfo = getGuiaInfoForItem(item.id, 'bordado');
+    const sewInfo = getGuiaInfoForItem(item.id, 'confeccion');
+    return { ...item, _emb: embInfo, _sew: sewInfo };
+  });
+
+  let filtered = [...enriched];
   if (filters.search) {
     const s = filters.search.toLowerCase();
     filtered = filtered.filter(i =>
       i.products?.code?.toLowerCase().includes(s) ||
       i.products?.collection?.toLowerCase().includes(s) ||
-      (i.sewing_type || '').toLowerCase().includes(s)
+      i.products?.garment?.toLowerCase().includes(s) ||
+      i._sew.worker.toLowerCase().includes(s)
     );
   }
   if (filters.gender) filtered = filtered.filter(i => i.products?.gender === filters.gender);
   if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
-  if (filters.status) filtered = filtered.filter(i => i.sew_status === filters.status);
+  if (filters.status) filtered = filtered.filter(i => i._sew.status === filters.status);
+
+  const totalItems = filtered.length;
+  const totalEnConf = filtered.filter(i => i._sew.status === 'en_confeccion').length;
+  const totalCompletado = filtered.filter(i => i._sew.status === 'completado').length;
+  const totalCorreccion = filtered.filter(i => i._sew.status === 'correccion').length;
 
   return `
     <h2 style="font-size:20px;margin-bottom:16px;">Control de Confección</h2>
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">
+      <div class="stat-card"><div class="label">Sin asignar</div><div class="value">${totalItems - totalEnConf - totalCompletado - totalCorreccion}</div></div>
+      <div class="stat-card"><div class="label">En confección</div><div class="value" style="color:var(--primary)">${totalEnConf}</div></div>
+      <div class="stat-card"><div class="label">Completado</div><div class="value" style="color:var(--success)">${totalCompletado}</div></div>
+      <div class="stat-card"><div class="label">Corrección</div><div class="value" style="color:var(--danger)">${totalCorreccion}</div></div>
+    </div>
     <div class="filters">
-      <input class="filter-input" type="text" placeholder="Buscar código, colección..." id="filter-search" value="${filters.search}" style="width:220px;">
+      <input class="filter-input" type="text" placeholder="Buscar código, colección, costurera..." id="filter-search" value="${filters.search}" style="width:260px;">
       <select class="filter-input" id="filter-gender">
         <option value="">Todos los géneros</option>
         <option value="Niña" ${filters.gender === 'Niña' ? 'selected' : ''}>Niña</option>
@@ -1322,44 +1366,33 @@ function renderConfeccion() {
       <table>
         <thead>
           <tr>
-            <th>Código</th><th>Colección</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th><th>OK Bordado</th>
-            <th>Tipo</th><th>Asignadas</th><th>F. Inicio</th><th>F. Ent. Est.</th><th>F. Ent. Real</th><th>OK</th><th>Estado</th>
+            <th>Código</th><th>Colección</th><th>Prenda</th><th>Género</th><th>Talla</th><th>Cant.</th>
+            <th>Bordado</th><th>Guía</th><th>Costurera</th><th>Enviadas</th><th>F. Salida</th><th>F. Ret. Est.</th><th>OK</th><th>Correc.</th><th>Estado</th>
           </tr>
         </thead>
         <tbody>
-          ${filtered.map(item => `
-            <tr>
+          ${filtered.map(item => {
+            const emb = item._emb;
+            const sew = item._sew;
+            const embBadge = emb.status === 'completado' ? '✅' : emb.status === 'en_bordado' ? '🔄' : emb.status === 'correccion' ? '⚠️' : '⬜';
+            return `<tr>
               <td><strong>${item.products?.code || ''}</strong></td>
               <td>${item.products?.collection || ''}</td>
               <td>${item.products?.garment || ''}</td>
               <td><span class="gender-badge gender-${item.products?.gender === 'Niña' ? 'nina' : 'nino'}">${item.products?.gender || ''}</span></td>
               <td>${item.size}</td>
               <td><strong>${item.quantity}</strong></td>
-              <td>${item.emb_ok ? '✅' : '⬜'}</td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'sewing_type', 'text')">${item.sewing_type || '—'}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'sew_qty_assigned', 'number')">${item.sew_qty_assigned || 0}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'sew_date_start', 'date')">${item.sew_date_start || '—'}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'sew_date_expected', 'date')">${item.sew_date_expected || '—'}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="editField(this, ${item.id}, 'sew_date_completed', 'date')">${item.sew_date_completed || '—'}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="toggleBool(${item.id}, 'sew_ok', ${item.sew_ok})">${item.sew_ok ? '✅' : '—'}</span>
-              </td>
-              <td>
-                <span class="editable" onclick="editStatus(this, ${item.id}, 'sew_status', ['pendiente','listo_para_confeccion','en_confeccion','completado'])"
-                ><span class="badge badge-${item.sew_status}">${statusLabels[item.sew_status] || item.sew_status}</span></span>
-              </td>
-            </tr>
-          `).join('')}
+              <td title="Bordado: ${emb.qtyOk} OK / ${emb.qtySent} enviadas">${embBadge}</td>
+              <td style="font-size:12px;">${sew.guiaNumbers.join(', ') || '—'}</td>
+              <td>${sew.worker}</td>
+              <td>${sew.qtySent || '—'}</td>
+              <td>${formatDateSafe(sew.dateSent)}</td>
+              <td>${formatDateSafe(sew.dateExpected)}</td>
+              <td style="color:var(--success);font-weight:600">${sew.qtyOk || '—'}</td>
+              <td style="color:${sew.qtyCorr > 0 ? 'var(--danger)' : 'var(--text-light)'};font-weight:${sew.qtyCorr > 0 ? '600' : 'normal'}">${sew.qtyCorr || '—'}</td>
+              <td><span class="badge badge-${sew.status === 'en_confeccion' ? 'en_confeccion' : sew.status === 'completado' ? 'completado' : sew.status === 'correccion' ? 'correccion' : 'sin_asignar'}">${statusLabels[sew.status]}</span></td>
+            </tr>`;
+          }).join('')}
         </tbody>
       </table>
     </div></div>
