@@ -768,7 +768,7 @@ function renderGuiaCreate() {
 
   html += `<div class="table-container"><div class="table-scroll"><table>
     <thead><tr>
-      <th style="width:36px"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" ${selectedPIIds.size === filtered.length && filtered.length > 0 ? 'checked' : ''} /></th>
+      <th style="width:36px"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" ${filtered.length > 0 && filtered.every(pi => selectedPIIds.has(pi.id)) ? 'checked' : ''} /></th>
       <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Talla</th><th>Disponible</th><th>Estado</th>
     </tr></thead><tbody>`;
 
@@ -1182,7 +1182,7 @@ function renderGuiaEdit() {
 
   html += `<div class="table-container"><div class="table-scroll"><table>
     <thead><tr>
-      <th style="width:36px"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" ${selectedPIIds.size === filtered.length && filtered.length > 0 ? 'checked' : ''} /></th>
+      <th style="width:36px"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" ${filtered.length > 0 && filtered.every(pi => selectedPIIds.has(pi.id)) ? 'checked' : ''} /></th>
       <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Talla</th><th>Disponible</th><th>En guía</th>
     </tr></thead><tbody>`;
 
@@ -1488,14 +1488,15 @@ async function toggleWorkerActive(workerId, active) {
 }
 
 function toggleSelectAll(checked) {
-  selectedPIIds.clear();
+  const availableItems = allItems.filter(pi => getAvailableQty(pi.id, guiaType) > 0);
+  let filtered = availableItems;
+  if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
+  if (filters.garment) filtered = filtered.filter(i => i.products?.garment === filters.garment);
+  if (filters.fabric) filtered = filtered.filter(i => i.products?.fabric === filters.fabric);
   if (checked) {
-    const availableItems = allItems.filter(pi => getAvailableQty(pi.id, guiaType) > 0);
-    let filtered = availableItems;
-    if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
-    if (filters.garment) filtered = filtered.filter(i => i.products?.garment === filters.garment);
-    if (filters.fabric) filtered = filtered.filter(i => i.products?.fabric === filters.fabric);
     filtered.forEach(pi => selectedPIIds.add(pi.id));
+  } else {
+    filtered.forEach(pi => selectedPIIds.delete(pi.id));
   }
   render();
 }
