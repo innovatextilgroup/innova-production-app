@@ -823,8 +823,9 @@ function renderGuiaCreateStep2() {
     <button class="btn-action" onclick="guiaView='create';render();" style="background:var(--neutral-light);color:var(--text);">← Volver</button>
   </div>`;
 
+  const todayDefault = new Date().toISOString().split('T')[0];
   html += `<div class="table-container" style="padding:20px;margin-bottom:16px;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px;">
       <div>
         <label style="font-size:12px;font-weight:600;color:var(--text-light);display:block;margin-bottom:4px;">
           ${guiaType === 'bordado' ? 'Bordadora' : 'Costurera'}
@@ -833,6 +834,10 @@ function renderGuiaCreateStep2() {
           <option value="">Seleccionar...</option>
           ${typeWorkers.map(w => `<option value="${w.id}">${w.name}</option>`).join('')}
         </select>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text-light);display:block;margin-bottom:4px;">Fecha de salida</label>
+        <input type="date" id="guia-date-sent" class="filter-input" style="width:100%;" value="${todayDefault}" max="${todayDefault}" />
       </div>
       <div>
         <label style="font-size:12px;font-weight:600;color:var(--text-light);display:block;margin-bottom:4px;">Retorno esperado</label>
@@ -879,19 +884,19 @@ function renderGuiaCreateStep2() {
 
 async function saveNewGuia() {
   const workerId = document.getElementById('guia-worker')?.value;
+  const dateSent = document.getElementById('guia-date-sent')?.value || new Date().toISOString().split('T')[0];
   const dateExpected = document.getElementById('guia-date')?.value;
   const notes = document.getElementById('guia-notes')?.value || '';
 
   if (!workerId) { showToast('Seleccioná una ' + (guiaType === 'bordado' ? 'bordadora' : 'costurera'), 'error'); return; }
 
   const guiaNumber = await getNextGuiaNumber(guiaType);
-  const today = new Date().toISOString().split('T')[0];
 
   const { data: newGuia, error: gErr } = await sb.from('guias').insert({
     guia_number: guiaNumber,
     type: guiaType,
     worker_id: parseInt(workerId),
-    date_sent: today,
+    date_sent: dateSent,
     date_expected: dateExpected || null,
     status: 'enviada',
     notes: notes
@@ -1091,12 +1096,21 @@ async function saveGuiaReturn(guiaId) {
     return;
   }
 
+  const todayDate = new Date().toISOString().split('T')[0];
   for (const u of updates) {
-    await sb.from('guia_items').update({
+    const updateData = {
       qty_returned_ok: u.qty_returned_ok,
       qty_correction: u.qty_correction,
       qty_discount: u.qty_discount
-    }).eq('id', u.id);
+    };
+    // Stamp date_returned when item first gets any return data
+    const existingGI = guiaItems.find(gi => gi.id === u.id);
+    const hadReturn = existingGI && (existingGI.qty_returned_ok > 0 || existingGI.qty_correction > 0 || existingGI.qty_discount > 0);
+    const hasReturnNow = (u.qty_returned_ok > 0 || u.qty_correction > 0 || u.qty_discount > 0);
+    if (!hadReturn && hasReturnNow) {
+      updateData.date_returned = todayDate;
+    }
+    await sb.from('guia_items').update(updateData).eq('id', u.id);
   }
 
   // Update guía status
@@ -1729,7 +1743,7 @@ function getGuiaInfoForItem(piId, type) {
     return g && g.type === type && g.status !== 'cancelada';
   });
   if (activeGI.length === 0) {
-    return { status: 'sin_asignar', worker: '—', qtySent: 0, qtyOk: 0, qtyCorr: 0, qtyDisc: 0, dateSent: null, dateExpected: null, guiaNumbers: [] };
+    return { status: 'sin_asignar', worker: '—', qtySent: 0, qtyOk: 0, qtyCorr: 0, qtyDisc: 0, dateSent: null, dateExpected: null, dateReturned: null, guiaNumbers: [] };
   }
   const totalSent = activeGI.reduce((s, gi) => s + gi.qty_sent, 0);
   const totalOk = activeGI.reduce((s, gi) => s + (gi.qty_returned_ok || 0), 0);
@@ -1742,7 +1756,10 @@ function getGuiaInfoForItem(piId, type) {
   if (totalCorr > 0) status = 'correccion';
   if (totalOk + totalDisc >= totalSent && totalCorr === 0) status = 'completado';
   const nums = [...new Set(activeGI.map(gi => { const g = guias.find(gg => gg.id === gi.guia_id); return g?.guia_number; }).filter(Boolean))];
-  return { status, worker: worker?.name || '—', qtySent: totalSent, qtyOk: totalOk, qtyCorr: totalCorr, qtyDisc: totalDisc, dateSent: latestGuia?.date_sent, dateExpected: latestGuia?.date_expected, guiaNumbers: nums };
+  // Get the most recent per-item return date
+  const returnDates = activeGI.map(gi => gi.date_returned).filter(Boolean).sort();
+  const dateReturned = returnDates.length > 0 ? returnDates[returnDates.length - 1] : null;
+  return { status, worker: worker?.name || '—', qtySent: totalSent, qtyOk: totalOk, qtyCorr: totalCorr, qtyDisc: totalDisc, dateSent: latestGuia?.date_sent, dateExpected: latestGuia?.date_expected, dateReturned, guiaNumbers: nums };
 }
 
 function formatDateSafe(d) { return d ? new Date(d + 'T12:00:00').toLocaleDateString('es') : '—'; }
@@ -1819,7 +1836,7 @@ function renderBordado() {
         <thead>
           <tr>
             <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Género</th><th>Talla</th><th>Cant.</th><th>Destino</th>
-            <th>Guía</th><th>Bordadora</th><th>Enviadas</th><th>F. Salida</th><th>F. Ret. Est.</th><th>OK</th><th>Correc.</th><th>Estado</th>
+            <th>Guía</th><th>Bordadora</th><th>Enviadas</th><th>F. Salida</th><th>F. Ret. Est.</th><th>F. Retorno</th><th>OK</th><th>Correc.</th><th>Estado</th>
           </tr>
         </thead>
         <tbody>
@@ -1841,6 +1858,7 @@ function renderBordado() {
               <td>${e.qtySent || '—'}</td>
               <td>${formatDateSafe(e.dateSent)}</td>
               <td>${formatDateSafe(e.dateExpected)}</td>
+              <td style="color:var(--success);font-weight:600">${formatDateSafe(e.dateReturned)}</td>
               <td style="color:var(--success);font-weight:600">${e.qtyOk || '—'}</td>
               <td style="color:${e.qtyCorr > 0 ? 'var(--danger)' : 'var(--text-light)'};font-weight:${e.qtyCorr > 0 ? '600' : 'normal'}">${e.qtyCorr || '—'}</td>
               <td><span class="badge badge-${e.status === 'en_bordado' ? 'en_bordado' : e.status === 'completado' ? 'completado' : e.status === 'correccion' ? 'correccion' : 'sin_asignar'}">${statusLabels[e.status]}</span></td>
@@ -1916,7 +1934,7 @@ function renderConfeccion() {
         <thead>
           <tr>
             <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Género</th><th>Talla</th><th>Cant.</th><th>Destino</th>
-            <th>Bordado</th><th>Guía</th><th>Costurera</th><th>Enviadas</th><th>F. Salida</th><th>F. Ret. Est.</th><th>OK</th><th>Correc.</th><th>Estado</th>
+            <th>Bordado</th><th>Guía</th><th>Costurera</th><th>Enviadas</th><th>F. Salida</th><th>F. Ret. Est.</th><th>F. Retorno</th><th>OK</th><th>Correc.</th><th>Estado</th>
           </tr>
         </thead>
         <tbody>
@@ -1941,6 +1959,7 @@ function renderConfeccion() {
               <td>${sew.qtySent || '—'}</td>
               <td>${formatDateSafe(sew.dateSent)}</td>
               <td>${formatDateSafe(sew.dateExpected)}</td>
+              <td style="color:var(--success);font-weight:600">${formatDateSafe(sew.dateReturned)}</td>
               <td style="color:var(--success);font-weight:600">${sew.qtyOk || '—'}</td>
               <td style="color:${sew.qtyCorr > 0 ? 'var(--danger)' : 'var(--text-light)'};font-weight:${sew.qtyCorr > 0 ? '600' : 'normal'}">${sew.qtyCorr || '—'}</td>
               <td><span class="badge badge-${sew.status === 'en_confeccion' ? 'en_confeccion' : sew.status === 'completado' ? 'completado' : sew.status === 'correccion' ? 'correccion' : 'sin_asignar'}">${statusLabels[sew.status]}</span></td>
