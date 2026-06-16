@@ -400,6 +400,8 @@ function setupTabs() {
 // RENDER
 // ============================================================
 function render() {
+  const activeId = document.activeElement?.id;
+  const cursorPos = document.activeElement?.selectionStart;
   const content = document.getElementById('content');
   switch (currentTab) {
     case 'dashboard': content.innerHTML = renderDashboard(); break;
@@ -410,6 +412,10 @@ function render() {
     case 'productos': content.innerHTML = renderProductos(); break;
   }
   attachListeners();
+  if (activeId) {
+    const el = document.getElementById(activeId);
+    if (el) { el.focus(); if (cursorPos != null && el.setSelectionRange) el.setSelectionRange(cursorPos, cursorPos); }
+  }
 }
 
 // ============================================================
