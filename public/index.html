@@ -332,6 +332,7 @@ let guiaView = 'list';
 let currentGuiaId = null;
 let selectedPIIds = new Set();
 let guiaType = 'bordado';
+let showExcessForm = false;
 
 // ============================================================
 // INIT
@@ -748,8 +749,42 @@ function renderGuiaCreate() {
 
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
     <h2 style="font-size:20px;font-weight:700;">Nueva guía — Seleccionar items</h2>
-    <button class="btn-action" onclick="guiaView='list';render();" style="background:var(--neutral-light);color:var(--text);">← Volver</button>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-action" onclick="showExcessForm=!showExcessForm;render();" style="background:var(--primary-light);color:var(--primary);">+ Excedente</button>
+      <button class="btn-action" onclick="guiaView='list';render();" style="background:var(--neutral-light);color:var(--text);">← Volver</button>
+    </div>
   </div>`;
+
+  // Excess item form
+  if (typeof showExcessForm !== 'undefined' && showExcessForm) {
+    const allProducts = products;
+    html += `<div class="table-container" style="padding:16px 20px;margin-bottom:16px;border:2px solid var(--primary);">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <span style="font-size:15px;font-weight:700;">Agregar excedente de corte</span>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:14px;">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text-light);display:block;margin-bottom:4px;">Producto</label>
+          <select id="excess-product" class="filter-input" style="width:100%;" >
+            <option value="">Seleccionar producto...</option>
+            ${allProducts.map(p => `<option value="${p.id}">${p.code} — ${p.garment} (${p.collection})</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text-light);display:block;margin-bottom:4px;">Talla</label>
+          <input type="text" id="excess-size" class="filter-input" style="width:100%;" placeholder="Ej: 4, 6, 8..." />
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text-light);display:block;margin-bottom:4px;">Cantidad</label>
+          <input type="number" id="excess-qty" class="filter-input" style="width:100%;" min="1" value="1" />
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button class="btn-action" onclick="showExcessForm=false;render();" style="background:var(--neutral-light);color:var(--text);">Cancelar</button>
+        <button class="btn-action" onclick="saveExcessItem();" style="background:var(--primary);color:white;">Agregar excedente</button>
+      </div>
+    </div>`;
+  }
 
   html += `<div class="filters">
     <select class="filter-input" id="guia-filter-collection" onchange="filters.collection=this.value;render();">
@@ -785,9 +820,10 @@ function renderGuiaCreate() {
     // Check if partially assigned in other guías
     const inOtherGuia = guiaItems.some(gi => gi.production_item_id === pi.id && guias.find(g => g.id === gi.guia_id && g.type === guiaType && g.status !== 'cancelada'));
 
+    const excessTag = pi.is_excess ? '<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600;margin-left:4px;">exc</span>' : '';
     html += `<tr style="${checked ? 'background:var(--primary-light);' : ''}">
       <td><input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleSelectItem(${pi.id}, this.checked)" /></td>
-      <td style="font-weight:600">${p.code || ''}</td>
+      <td style="font-weight:600">${p.code || ''}${excessTag}</td>
       <td>${p.collection || ''}</td>
       <td>${p.garment || ''}</td>
       <td>${p.fabric || '—'}</td>
@@ -811,6 +847,30 @@ function renderGuiaCreate() {
   }
 
   return html;
+}
+
+async function saveExcessItem() {
+  const productId = document.getElementById('excess-product')?.value;
+  const size = document.getElementById('excess-size')?.value?.trim();
+  const qty = parseInt(document.getElementById('excess-qty')?.value) || 0;
+
+  if (!productId) { showToast('Selecciona un producto', 'error'); return; }
+  if (!size) { showToast('Ingresa la talla', 'error'); return; }
+  if (qty < 1) { showToast('La cantidad debe ser al menos 1', 'error'); return; }
+
+  const { data, error } = await sb.from('production_items').insert({
+    product_id: parseInt(productId),
+    size: size,
+    quantity: qty,
+    is_excess: true
+  }).select('*, products(*)').single();
+
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+
+  showToast(`Excedente agregado: ${data.products?.code} talla ${size} x${qty}`);
+  showExcessForm = false;
+  await loadData();
+  render();
 }
 
 function renderGuiaCreateStep2() {
@@ -986,8 +1046,9 @@ function renderGuiaDetail() {
   gItems.forEach(gi => {
     const p = gi.production_items?.products || {};
     const pi = gi.production_items || {};
+    const excTag = pi.is_excess ? '<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600;margin-left:4px;">exc</span>' : '';
     html += `<tr>
-      <td style="font-weight:600">${p.code || ''}</td>
+      <td style="font-weight:600">${p.code || ''}${excTag}</td>
       <td>${p.collection || ''}</td>
       <td>${p.garment || ''}</td>
       <td>${p.fabric || '—'}</td>
@@ -1843,8 +1904,9 @@ function renderBordado() {
           ${filtered.map(item => {
             const e = item._emb;
             const dest = getItemDestino(item.id);
+            const excTag = item.is_excess ? '<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600;margin-left:4px;">exc</span>' : '';
             return `<tr>
-              <td><strong>${item.products?.code || ''}</strong></td>
+              <td><strong>${item.products?.code || ''}</strong>${excTag}</td>
               <td>${item.products?.collection || ''}</td>
               <td>${item.products?.garment || ''}</td>
               <td>${item.products?.fabric || '—'}</td>
@@ -1943,8 +2005,9 @@ function renderConfeccion() {
             const sew = item._sew;
             const embBadge = emb.status === 'completado' ? '✅' : emb.status === 'en_bordado' ? '🔄' : emb.status === 'correccion' ? '⚠️' : '⬜';
             const dest = getItemDestino(item.id);
+            const excTag = item.is_excess ? '<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600;margin-left:4px;">exc</span>' : '';
             return `<tr>
-              <td><strong>${item.products?.code || ''}</strong></td>
+              <td><strong>${item.products?.code || ''}</strong>${excTag}</td>
               <td>${item.products?.collection || ''}</td>
               <td>${item.products?.garment || ''}</td>
               <td>${item.products?.fabric || '—'}</td>
