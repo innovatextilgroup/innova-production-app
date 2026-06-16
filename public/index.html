@@ -718,8 +718,11 @@ function renderGuiaList() {
     const collections = [...new Set(gItems.map(gi => gi.production_items?.products?.collection).filter(Boolean))];
     const overdue = isOverdue(g);
 
-    html += `<div class="table-container" style="padding:16px 20px;margin-bottom:12px;cursor:pointer;${overdue ? 'border-left:4px solid var(--danger);' : ''}" 
-      onclick="currentGuiaId=${g.id};guiaView='${g.status === 'completada' ? 'payment' : 'detail'}';render();">
+    const wInternal = worker?.is_internal || false;
+    const clickView = (g.status === 'completada' && !wInternal) ? 'payment' : 'detail';
+    const plantaTag = wInternal ? ' <span style="background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600;">Planta</span>' : '';
+    html += `<div class="table-container" style="padding:16px 20px;margin-bottom:12px;cursor:pointer;${overdue ? 'border-left:4px solid var(--danger);' : ''}"
+      onclick="currentGuiaId=${g.id};guiaView='${clickView}';render();">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="font-weight:700;font-size:15px;">${g.guia_number}</span>
@@ -729,7 +732,7 @@ function renderGuiaList() {
         <span style="font-size:13px;color:var(--text-light);">${g.date_sent ? new Date(g.date_sent + 'T12:00:00').toLocaleDateString('es') : 'Sin enviar'}</span>
       </div>
       <div style="font-size:13px;color:var(--text-light);">
-        ${worker ? worker.name : 'Sin asignar'} · ${collections.join(', ')} · ${totalSent} piezas
+        ${worker ? worker.name : 'Sin asignar'}${plantaTag} · ${collections.join(', ')} · ${totalSent} piezas
         ${totalOk > 0 ? ` · <span style="color:var(--success)">${totalOk} OK</span>` : ''}
         ${totalCorr > 0 ? ` · <span style="color:var(--warning)">${totalCorr} corrección</span>` : ''}
         ${totalDisc > 0 ? ` · <span style="color:var(--danger)">${totalDisc} descuento</span>` : ''}
@@ -890,9 +893,9 @@ function renderGuiaCreateStep2() {
         <label style="font-size:12px;font-weight:600;color:var(--text-light);display:block;margin-bottom:4px;">
           ${guiaType === 'bordado' ? 'Bordadora' : 'Costurera'}
         </label>
-        <select id="guia-worker" class="filter-input" style="width:100%;">
+        <select id="guia-worker" class="filter-input" style="width:100%;" onchange="togglePriceColumn()">
           <option value="">Seleccionar...</option>
-          ${typeWorkers.map(w => `<option value="${w.id}">${w.name}</option>`).join('')}
+          ${typeWorkers.map(w => `<option value="${w.id}" data-internal="${w.is_internal || false}">${w.name}${w.is_internal ? ' (Planta)' : ''}</option>`).join('')}
         </select>
       </div>
       <div>
@@ -912,7 +915,7 @@ function renderGuiaCreateStep2() {
 
   html += `<div class="table-container"><div class="table-scroll"><table>
     <thead><tr>
-      <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Talla</th><th>Disponible</th><th>Enviar</th><th>Precio/u</th>
+      <th>Código</th><th>Colección</th><th>Prenda</th><th>Tela</th><th>Color</th><th>Talla</th><th>Disponible</th><th>Enviar</th><th class="price-col">Precio/u</th>
     </tr></thead><tbody>`;
 
   selectedItems.forEach(pi => {
@@ -928,7 +931,7 @@ function renderGuiaCreateStep2() {
       <td>${pi.size}</td>
       <td>${avail}</td>
       <td><input type="number" class="filter-input guia-qty-input" data-pi-id="${pi.id}" data-max="${avail}" min="1" max="${avail}" value="${avail}" style="width:70px;text-align:center;" /></td>
-      <td><input type="number" class="filter-input guia-price-input" data-pi-id="${pi.id}" step="0.01" min="0" value="${price}" placeholder="0.00" style="width:80px;text-align:center;" /></td>
+      <td class="price-col"><input type="number" class="filter-input guia-price-input" data-pi-id="${pi.id}" step="0.01" min="0" value="${price}" placeholder="0.00" style="width:80px;text-align:center;" /></td>
     </tr>`;
   });
 
@@ -940,6 +943,15 @@ function renderGuiaCreateStep2() {
   </div>`;
 
   return html;
+}
+
+function togglePriceColumn() {
+  const sel = document.getElementById('guia-worker');
+  const opt = sel?.selectedOptions[0];
+  const isInternal = opt?.dataset?.internal === 'true';
+  document.querySelectorAll('.price-col').forEach(el => {
+    el.style.display = isInternal ? 'none' : '';
+  });
 }
 
 async function saveNewGuia() {
@@ -999,6 +1011,7 @@ function renderGuiaDetail() {
 
   const gItems = guiaItems.filter(gi => gi.guia_id === g.id);
   const worker = workers.find(w => w.id === g.worker_id);
+  const isInternal = worker?.is_internal || false;
   const overdue = isOverdue(g);
   const totalSent = gItems.reduce((s, gi) => s + gi.qty_sent, 0);
   const totalOk = gItems.reduce((s, gi) => s + (gi.qty_returned_ok || 0), 0);
@@ -1015,12 +1028,12 @@ function renderGuiaDetail() {
     <div style="display:flex;gap:8px;">
       ${['pendiente','enviada'].includes(g.status) ? `<button class="btn-action" onclick="startEditGuia(${g.id});" style="background:var(--blue-light);color:var(--blue);">✏ Editar guía</button>` : ''}
       ${isActive ? `<button class="btn-action" onclick="cancelGuia(${g.id});" style="background:var(--danger-light);color:var(--danger);">✕ Cancelar guía</button>` : ''}
-      ${g.status === 'completada' ? `<button class="btn-action" onclick="guiaView='payment';render();" style="background:var(--success);color:white;">$ Generar pago</button>` : ''}
+      ${g.status === 'completada' && !isInternal ? `<button class="btn-action" onclick="guiaView='payment';render();" style="background:var(--success);color:white;">$ Generar pago</button>` : ''}
       <button class="btn-action" onclick="guiaView='list';render();" style="background:var(--neutral-light);color:var(--text);">← Volver</button>
     </div>
   </div>
   <p style="color:var(--text-light);font-size:14px;margin-bottom:20px;">
-    ${worker ? worker.name : '—'} · Enviada ${g.date_sent ? new Date(g.date_sent + 'T12:00:00').toLocaleDateString('es') : '—'}
+    ${worker ? worker.name : '—'}${isInternal ? ' <span style="background:#dbeafe;color:#1e40af;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600;">Planta</span>' : ''} · Enviada ${g.date_sent ? new Date(g.date_sent + 'T12:00:00').toLocaleDateString('es') : '—'}
     ${g.date_expected ? ` · Retorno esperado ${new Date(g.date_expected + 'T12:00:00').toLocaleDateString('es')}` : ''}
     ${g.date_returned ? ` · <span style="color:var(--success);font-weight:600;">Retornó ${new Date(g.date_returned + 'T12:00:00').toLocaleDateString('es')}</span>` : ''}
     ${g.notes ? ` · ${g.notes}` : ''}
@@ -1405,6 +1418,8 @@ function renderGuiaPayment() {
 
   const gItems = guiaItems.filter(gi => gi.guia_id === g.id);
   const worker = workers.find(w => w.id === g.worker_id);
+  // Internal workers don't generate payments
+  if (worker?.is_internal) { guiaView = 'detail'; return renderGuiaDetail(); }
   const okItems = gItems.filter(gi => (gi.qty_returned_ok || 0) > 0);
   const discItems = gItems.filter(gi => (gi.qty_discount || 0) > 0);
   
@@ -1531,8 +1546,9 @@ function renderWorkersList() {
         return sum + gi.reduce((s, i) => s + i.qty_sent - (i.qty_returned_ok || 0) - (i.qty_discount || 0), 0);
       }, 0);
 
+      const internalTag = w.is_internal ? ' <span style="background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600;">Planta</span>' : '';
       html += `<tr>
-        <td style="font-weight:600">${w.name}</td>
+        <td style="font-weight:600">${w.name}${internalTag}</td>
         <td>${w.phone || '—'}</td>
         <td>${wGuias.length}</td>
         <td>${wPiezas}</td>
@@ -1820,7 +1836,9 @@ function getGuiaInfoForItem(piId, type) {
   // Get the most recent per-item return date
   const returnDates = activeGI.map(gi => gi.date_returned).filter(Boolean).sort();
   const dateReturned = returnDates.length > 0 ? returnDates[returnDates.length - 1] : null;
-  return { status, worker: worker?.name || '—', qtySent: totalSent, qtyOk: totalOk, qtyCorr: totalCorr, qtyDisc: totalDisc, dateSent: latestGuia?.date_sent, dateExpected: latestGuia?.date_expected, dateReturned, guiaNumbers: nums };
+  const workerName = worker?.name || '—';
+  const workerTag = worker?.is_internal ? ' <span style="background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600;">Planta</span>' : '';
+  return { status, worker: workerName + workerTag, qtySent: totalSent, qtyOk: totalOk, qtyCorr: totalCorr, qtyDisc: totalDisc, dateSent: latestGuia?.date_sent, dateExpected: latestGuia?.date_expected, dateReturned, guiaNumbers: nums };
 }
 
 function formatDateSafe(d) { return d ? new Date(d + 'T12:00:00').toLocaleDateString('es') : '—'; }
