@@ -322,7 +322,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let allItems = [];
 let products = [];
 let currentTab = 'dashboard';
-let filters = { search: '', gender: '', collection: '', status: '', garment: '', fabric: '' };
+let filters = { search: '', gender: '', collection: '', status: '', garment: '', fabric: '', shipment: '' };
 let workers = [];
 let guias = [];
 let shipments = [];
@@ -391,7 +391,7 @@ function setupTabs() {
         currentGuiaId = null;
         selectedPIIds.clear();
       }
-      filters = { search: '', gender: '', collection: '', status: '', garment: '', fabric: '' };
+      filters = { search: '', gender: '', collection: '', status: '', garment: '', fabric: '', shipment: '' };
       render();
     });
   });
@@ -1879,6 +1879,15 @@ function renderBordado() {
   if (filters.gender) filtered = filtered.filter(i => i.products?.gender === filters.gender);
   if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
   if (filters.status) filtered = filtered.filter(i => i._emb.status === filters.status);
+  if (filters.shipment) {
+    filtered = filtered.filter(i => {
+      const sItems = shipmentItems.filter(si => si.production_item_id === i.id);
+      return sItems.some(si => {
+        const sh = shipments.find(s => s.id === si.shipment_id);
+        return sh && sh.destination === filters.shipment;
+      });
+    });
+  }
 
   const totalItems = filtered.length;
   const totalEnBordado = filtered.filter(i => i._emb.status === 'en_bordado').length;
@@ -1907,6 +1916,10 @@ function renderBordado() {
       <select class="filter-input" id="filter-status">
         <option value="">Todos los estados</option>
         ${statuses.map(s => `<option value="${s}" ${filters.status === s ? 'selected' : ''}>${statusLabels[s]}</option>`).join('')}
+      </select>
+      <select class="filter-input" id="filter-shipment">
+        <option value="">Todos los embarques</option>
+        ${shipments.map(s => `<option value="${s.destination}" ${filters.shipment === s.destination ? 'selected' : ''}>${s.destination}</option>`).join('')}
       </select>
       <span style="font-size:13px;color:var(--text-light);">${filtered.length} ítems</span>
     </div>
@@ -1978,6 +1991,15 @@ function renderConfeccion() {
   if (filters.gender) filtered = filtered.filter(i => i.products?.gender === filters.gender);
   if (filters.collection) filtered = filtered.filter(i => i.products?.collection === filters.collection);
   if (filters.status) filtered = filtered.filter(i => i._sew.status === filters.status);
+  if (filters.shipment) {
+    filtered = filtered.filter(i => {
+      const sItems = shipmentItems.filter(si => si.production_item_id === i.id);
+      return sItems.some(si => {
+        const sh = shipments.find(s => s.id === si.shipment_id);
+        return sh && sh.destination === filters.shipment;
+      });
+    });
+  }
 
   const totalItems = filtered.length;
   const totalEnConf = filtered.filter(i => i._sew.status === 'en_confeccion').length;
@@ -2006,6 +2028,10 @@ function renderConfeccion() {
       <select class="filter-input" id="filter-status">
         <option value="">Todos los estados</option>
         ${statuses.map(s => `<option value="${s}" ${filters.status === s ? 'selected' : ''}>${statusLabels[s]}</option>`).join('')}
+      </select>
+      <select class="filter-input" id="filter-shipment">
+        <option value="">Todos los embarques</option>
+        ${shipments.map(s => `<option value="${s.destination}" ${filters.shipment === s.destination ? 'selected' : ''}>${s.destination}</option>`).join('')}
       </select>
       <span style="font-size:13px;color:var(--text-light);">${filtered.length} ítems</span>
     </div>
@@ -2176,6 +2202,10 @@ function attachListeners() {
   }
   if (statusEl) {
     statusEl.addEventListener('change', (e) => { filters.status = e.target.value; render(); });
+  }
+  const shipmentEl = document.getElementById('filter-shipment');
+  if (shipmentEl) {
+    shipmentEl.addEventListener('change', (e) => { filters.shipment = e.target.value; render(); });
   }
 }
 
