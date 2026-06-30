@@ -373,6 +373,7 @@
   <div class="nav-tab" data-tab="bordado">Control Bordado</div>
   <div class="nav-tab" data-tab="confeccion">Control Confección</div>
   <div class="nav-tab" data-tab="productos">Productos</div>
+  <div class="nav-tab" data-tab="actividad">Actividad</div>
 </div>
 
 <div class="main" id="content">
@@ -393,6 +394,12 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // ============================================================
 const ALLOWED_EMAILS = ['adrianamae.tech@gmail.com', 'ingenieria.ibtex@gmail.com', 'adrianamaebb@gmail.com'];
 let authMode = 'login';
+let currentUserEmail = '';
+
+async function logActivity(action, details) {
+  if (!currentUserEmail) return;
+  await sb.from('activity_log').insert({ user_email: currentUserEmail, action, details });
+}
 
 async function checkAuth() {
   const { data: { session } } = await sb.auth.getSession();
@@ -400,6 +407,7 @@ async function checkAuth() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('user-email').textContent = session.user.email;
     document.getElementById('logout-btn').style.display = 'inline-block';
+    currentUserEmail = session.user.email;
     return true;
   }
   document.getElementById('login-screen').style.display = 'flex';
@@ -450,12 +458,14 @@ async function handleLogin() {
   if (session) {
     document.getElementById('user-email').textContent = session.user.email;
     document.getElementById('logout-btn').style.display = 'inline-block';
+    currentUserEmail = session.user.email;
   }
   await startApp();
 }
 
 async function handleLogout() {
   await sb.auth.signOut();
+  currentUserEmail = '';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('logout-btn').style.display = 'none';
   document.getElementById('user-email').textContent = '';
@@ -496,6 +506,7 @@ let currentGuiaId = null;
 let selectedPIIds = new Set();
 let guiaType = 'bordado';
 let showExcessForm = false;
+let activityLog = [];
 
 // ============================================================
 // INIT
@@ -532,7 +543,7 @@ function calculateDeadline() {
 }
 
 async function loadData() {
-  const [itemsRes, productsRes, assignRes, shipmentsRes, shipItemsRes, workersRes, guiasRes, guiaItemsRes] = await Promise.all([
+  const [itemsRes, productsRes, assignRes, shipmentsRes, shipItemsRes, workersRes, guiasRes, guiaItemsRes, activityRes] = await Promise.all([
     sb.from('production_items').select('*, products(*)').order('id'),
     sb.from('products').select('*').order('collection'),
     sb.from('bordado_assignments').select('*').order('created_at'),
@@ -540,7 +551,8 @@ async function loadData() {
     sb.from('shipment_items').select('*'),
     sb.from('workers').select('*').order('name'),
     sb.from('guias').select('*').order('created_at', { ascending: false }),
-    sb.from('guia_items').select('*, production_items(*, products(*))').order('id')
+    sb.from('guia_items').select('*, production_items(*, products(*))').order('id'),
+    sb.from('activity_log').select('*').order('created_at', { ascending: false }).limit(100)
   ]);
 
   if (itemsRes.error) { console.error(itemsRes.error); return; }
@@ -551,6 +563,7 @@ async function loadData() {
   guiaItems = guiaItemsRes.data || [];
   shipments = shipmentsRes.data || [];
   shipmentItems = shipItemsRes.data || [];
+  activityLog = activityRes.data || [];
 }
 
 function setupTabs() {
@@ -584,8 +597,10 @@ function render() {
     case 'bordado': content.innerHTML = renderBordado(); break;
     case 'confeccion': content.innerHTML = renderConfeccion(); break;
     case 'productos': content.innerHTML = renderProductos(); break;
+    case 'actividad': content.innerHTML = renderActividad(); break;
   }
   attachListeners();
+  if (currentTab === 'actividad') attachActivityListeners();
   if (activeId) {
     const el = document.getElementById(activeId);
     if (el) { el.focus(); if (cursorPos != null && el.setSelectionRange) el.setSelectionRange(cursorPos, cursorPos); }
@@ -1044,6 +1059,7 @@ async function saveExcessItem() {
   if (error) { showToast('Error: ' + error.message, 'error'); return; }
 
   showToast(`Excedente agregado: ${data.products?.code} talla ${size} x${qty}`);
+  await logActivity('Excedente agregado', `${data.products?.code} — Talla ${size} x${qty}`);
   showExcessForm = false;
   await loadData();
   render();
@@ -1144,7 +1160,8 @@ async function saveNewGuia() {
     date_sent: dateSent,
     date_expected: dateExpected || null,
     status: 'enviada',
-    notes: notes
+    notes: notes,
+    created_by: currentUserEmail
   }).select().single();
 
   if (gErr) { showToast('Error al crear guía: ' + gErr.message, 'error'); return; }
@@ -1171,7 +1188,9 @@ async function saveNewGuia() {
     if (iErr) { showToast('Error al guardar items: ' + iErr.message, 'error'); return; }
   }
 
+  const wName = workers.find(w => w.id === parseInt(workerId))?.name || '';
   showToast(`Guía ${guiaNumber} creada exitosamente`);
+  await logActivity('Guía creada', `${guiaNumber} — ${wName} — ${items.length} items, ${items.reduce((s,i) => s + i.qty_sent, 0)} piezas`);
   guiaView = 'list';
   selectedPIIds.clear();
   await loadData();
@@ -1380,15 +1399,19 @@ async function saveGuiaReturn(guiaId) {
 
   await sb.from('guias').update(guiaUpdate).eq('id', guiaId);
 
+  const g = guias.find(gg => gg.id === guiaId);
   showToast('Retorno guardado');
+  await logActivity('Retorno registrado', `${g?.guia_number || guiaId} — OK: ${updates.reduce((s,u) => s + u.qty_returned_ok, 0)}, Corrección: ${totalCorr}, Descuento: ${updates.reduce((s,u) => s + u.qty_discount, 0)}`);
   await loadData();
   render();
 }
 
 async function cancelGuia(guiaId) {
   if (!confirm('¿Cancelar esta guía? Las piezas volverán a estar disponibles.')) return;
+  const g = guias.find(gg => gg.id === guiaId);
   await sb.from('guias').update({ status: 'cancelada', updated_at: new Date().toISOString() }).eq('id', guiaId);
   showToast('Guía cancelada');
+  await logActivity('Guía cancelada', `${g?.guia_number || guiaId}`);
   await loadData();
   guiaView = 'list';
   render();
@@ -1579,7 +1602,9 @@ async function saveGuiaEdit(guiaId) {
 
   await sb.from('guias').update({ updated_at: new Date().toISOString() }).eq('id', guiaId);
 
+  const g = guias.find(gg => gg.id === guiaId);
   showToast('Guía actualizada');
+  await logActivity('Guía editada', `${g?.guia_number || guiaId} — ${items.length} items`);
   await loadData();
   guiaView = 'detail';
   render();
@@ -1679,8 +1704,10 @@ function renderGuiaPayment() {
 }
 
 async function markPaid(guiaId) {
+  const g = guias.find(gg => gg.id === guiaId);
   await sb.from('guias').update({ status: 'pagada', updated_at: new Date().toISOString() }).eq('id', guiaId);
   showToast('Guía marcada como pagada');
+  await logActivity('Pago registrado', `${g?.guia_number || guiaId}`);
   await loadData();
   render();
 }
@@ -1752,12 +1779,15 @@ async function addWorker() {
   if (error) { showToast('Error: ' + error.message, 'error'); return; }
 
   showToast(`${guiaType === 'bordado' ? 'Bordadora' : 'Costurera'} agregada`);
+  await logActivity('Trabajadora agregada', `${name} (${guiaType})`);
   await loadData();
   render();
 }
 
 async function toggleWorkerActive(workerId, active) {
+  const w = workers.find(w => w.id === workerId);
   await sb.from('workers').update({ active }).eq('id', workerId);
+  await logActivity(active ? 'Trabajadora activada' : 'Trabajadora desactivada', `${w?.name || workerId}`);
   await loadData();
   render();
 }
@@ -1768,6 +1798,7 @@ async function editWorkerName(workerId, currentName) {
   const { error } = await sb.from('workers').update({ name: newName.trim() }).eq('id', workerId);
   if (error) { showToast('Error: ' + error.message, 'error'); return; }
   showToast('Nombre actualizado');
+  await logActivity('Nombre editado', `"${currentName}" → "${newName.trim()}"`);
   await loadData();
   render();
 }
@@ -1787,6 +1818,7 @@ async function deleteWorker(workerId, name, guiaCount) {
   const { error } = await sb.from('workers').delete().eq('id', workerId);
   if (error) { showToast('Error: ' + error.message, 'error'); return; }
   showToast(`"${name}" eliminada`);
+  await logActivity('Trabajadora eliminada', `${name} (${guiaCount} guías eliminadas)`);
   await loadData();
   render();
 }
@@ -2319,6 +2351,83 @@ function renderProductos() {
       </table>
     </div></div>
   `;
+}
+
+// ============================================================
+// ACTIVIDAD
+// ============================================================
+function renderActividad() {
+  const uniqueEmails = [...new Set(activityLog.map(a => a.user_email))];
+  const uniqueActions = [...new Set(activityLog.map(a => a.action))];
+
+  let html = `<h2 style="font-size:20px;font-weight:700;margin-bottom:16px;">Registro de Actividad</h2>`;
+
+  html += `<div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+    <select class="filter-input" id="filter-activity-user" style="min-width:200px;">
+      <option value="">Todos los usuarios</option>
+      ${uniqueEmails.map(e => `<option value="${e}">${e.split('@')[0]}</option>`).join('')}
+    </select>
+    <select class="filter-input" id="filter-activity-action" style="min-width:180px;">
+      <option value="">Todas las acciones</option>
+      ${uniqueActions.map(a => `<option value="${a}">${a}</option>`).join('')}
+    </select>
+  </div>`;
+
+  let filtered = activityLog;
+  const userFilter = document.getElementById('filter-activity-user')?.value;
+  const actionFilter = document.getElementById('filter-activity-action')?.value;
+  if (userFilter) filtered = filtered.filter(a => a.user_email === userFilter);
+  if (actionFilter) filtered = filtered.filter(a => a.action === actionFilter);
+
+  if (filtered.length === 0) {
+    html += `<div style="text-align:center;padding:40px;color:var(--text-light);">No hay actividad registrada aún</div>`;
+  } else {
+    html += `<div class="table-container"><table>
+      <thead><tr>
+        <th>Fecha</th>
+        <th>Usuario</th>
+        <th>Acción</th>
+        <th>Detalle</th>
+      </tr></thead><tbody>`;
+
+    filtered.forEach(a => {
+      const date = new Date(a.created_at);
+      const dateStr = date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const timeStr = date.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+      const userShort = a.user_email.split('@')[0];
+
+      const actionColors = {
+        'Guía creada': 'var(--primary)',
+        'Guía editada': 'var(--warning)',
+        'Guía cancelada': 'var(--danger)',
+        'Retorno registrado': 'var(--success)',
+        'Pago registrado': 'var(--success)',
+        'Trabajadora agregada': 'var(--primary)',
+        'Trabajadora eliminada': 'var(--danger)',
+        'Nombre editado': 'var(--warning)',
+        'Excedente agregado': 'var(--pink)'
+      };
+      const color = actionColors[a.action] || 'var(--neutral)';
+
+      html += `<tr>
+        <td style="white-space:nowrap;font-size:13px;"><strong>${dateStr}</strong> <span style="color:var(--text-light)">${timeStr}</span></td>
+        <td style="font-weight:500;">${userShort}</td>
+        <td><span style="background:${color}15;color:${color};padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">${a.action}</span></td>
+        <td style="font-size:13px;color:var(--text-light);">${a.details || '—'}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+  }
+
+  return html;
+}
+
+function attachActivityListeners() {
+  const userEl = document.getElementById('filter-activity-user');
+  const actionEl = document.getElementById('filter-activity-action');
+  if (userEl) userEl.addEventListener('change', () => { document.getElementById('content').innerHTML = renderActividad(); attachActivityListeners(); });
+  if (actionEl) actionEl.addEventListener('change', () => { document.getElementById('content').innerHTML = renderActividad(); attachActivityListeners(); });
 }
 
 // ============================================================
