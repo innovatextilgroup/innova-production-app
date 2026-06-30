@@ -373,7 +373,6 @@
   <div class="nav-tab" data-tab="bordado">Control Bordado</div>
   <div class="nav-tab" data-tab="confeccion">Control Confección</div>
   <div class="nav-tab" data-tab="productos">Productos</div>
-  <div class="nav-tab" data-tab="actividad">Actividad</div>
 </div>
 
 <div class="main" id="content">
@@ -506,7 +505,6 @@ let currentGuiaId = null;
 let selectedPIIds = new Set();
 let guiaType = 'bordado';
 let showExcessForm = false;
-let activityLog = [];
 
 // ============================================================
 // INIT
@@ -543,7 +541,7 @@ function calculateDeadline() {
 }
 
 async function loadData() {
-  const [itemsRes, productsRes, assignRes, shipmentsRes, shipItemsRes, workersRes, guiasRes, guiaItemsRes, activityRes] = await Promise.all([
+  const [itemsRes, productsRes, assignRes, shipmentsRes, shipItemsRes, workersRes, guiasRes, guiaItemsRes] = await Promise.all([
     sb.from('production_items').select('*, products(*)').order('id'),
     sb.from('products').select('*').order('collection'),
     sb.from('bordado_assignments').select('*').order('created_at'),
@@ -551,8 +549,7 @@ async function loadData() {
     sb.from('shipment_items').select('*'),
     sb.from('workers').select('*').order('name'),
     sb.from('guias').select('*').order('created_at', { ascending: false }),
-    sb.from('guia_items').select('*, production_items(*, products(*))').order('id'),
-    sb.from('activity_log').select('*').order('created_at', { ascending: false }).limit(100)
+    sb.from('guia_items').select('*, production_items(*, products(*))').order('id')
   ]);
 
   if (itemsRes.error) { console.error(itemsRes.error); return; }
@@ -563,7 +560,6 @@ async function loadData() {
   guiaItems = guiaItemsRes.data || [];
   shipments = shipmentsRes.data || [];
   shipmentItems = shipItemsRes.data || [];
-  activityLog = activityRes.data || [];
 }
 
 function setupTabs() {
@@ -597,10 +593,8 @@ function render() {
     case 'bordado': content.innerHTML = renderBordado(); break;
     case 'confeccion': content.innerHTML = renderConfeccion(); break;
     case 'productos': content.innerHTML = renderProductos(); break;
-    case 'actividad': content.innerHTML = renderActividad(); break;
   }
   attachListeners();
-  if (currentTab === 'actividad') attachActivityListeners();
   if (activeId) {
     const el = document.getElementById(activeId);
     if (el) { el.focus(); if (cursorPos != null && el.setSelectionRange) el.setSelectionRange(cursorPos, cursorPos); }
@@ -2351,83 +2345,6 @@ function renderProductos() {
       </table>
     </div></div>
   `;
-}
-
-// ============================================================
-// ACTIVIDAD
-// ============================================================
-function renderActividad() {
-  const uniqueEmails = [...new Set(activityLog.map(a => a.user_email))];
-  const uniqueActions = [...new Set(activityLog.map(a => a.action))];
-
-  let html = `<h2 style="font-size:20px;font-weight:700;margin-bottom:16px;">Registro de Actividad</h2>`;
-
-  html += `<div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-    <select class="filter-input" id="filter-activity-user" style="min-width:200px;">
-      <option value="">Todos los usuarios</option>
-      ${uniqueEmails.map(e => `<option value="${e}">${e.split('@')[0]}</option>`).join('')}
-    </select>
-    <select class="filter-input" id="filter-activity-action" style="min-width:180px;">
-      <option value="">Todas las acciones</option>
-      ${uniqueActions.map(a => `<option value="${a}">${a}</option>`).join('')}
-    </select>
-  </div>`;
-
-  let filtered = activityLog;
-  const userFilter = document.getElementById('filter-activity-user')?.value;
-  const actionFilter = document.getElementById('filter-activity-action')?.value;
-  if (userFilter) filtered = filtered.filter(a => a.user_email === userFilter);
-  if (actionFilter) filtered = filtered.filter(a => a.action === actionFilter);
-
-  if (filtered.length === 0) {
-    html += `<div style="text-align:center;padding:40px;color:var(--text-light);">No hay actividad registrada aún</div>`;
-  } else {
-    html += `<div class="table-container"><table>
-      <thead><tr>
-        <th>Fecha</th>
-        <th>Usuario</th>
-        <th>Acción</th>
-        <th>Detalle</th>
-      </tr></thead><tbody>`;
-
-    filtered.forEach(a => {
-      const date = new Date(a.created_at);
-      const dateStr = date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-      const timeStr = date.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
-      const userShort = a.user_email.split('@')[0];
-
-      const actionColors = {
-        'Guía creada': 'var(--primary)',
-        'Guía editada': 'var(--warning)',
-        'Guía cancelada': 'var(--danger)',
-        'Retorno registrado': 'var(--success)',
-        'Pago registrado': 'var(--success)',
-        'Trabajadora agregada': 'var(--primary)',
-        'Trabajadora eliminada': 'var(--danger)',
-        'Nombre editado': 'var(--warning)',
-        'Excedente agregado': 'var(--pink)'
-      };
-      const color = actionColors[a.action] || 'var(--neutral)';
-
-      html += `<tr>
-        <td style="white-space:nowrap;font-size:13px;"><strong>${dateStr}</strong> <span style="color:var(--text-light)">${timeStr}</span></td>
-        <td style="font-weight:500;">${userShort}</td>
-        <td><span style="background:${color}15;color:${color};padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">${a.action}</span></td>
-        <td style="font-size:13px;color:var(--text-light);">${a.details || '—'}</td>
-      </tr>`;
-    });
-
-    html += `</tbody></table></div>`;
-  }
-
-  return html;
-}
-
-function attachActivityListeners() {
-  const userEl = document.getElementById('filter-activity-user');
-  const actionEl = document.getElementById('filter-activity-action');
-  if (userEl) userEl.addEventListener('change', () => { document.getElementById('content').innerHTML = renderActividad(); attachActivityListeners(); });
-  if (actionEl) actionEl.addEventListener('change', () => { document.getElementById('content').innerHTML = renderActividad(); attachActivityListeners(); });
 }
 
 // ============================================================
