@@ -279,13 +279,85 @@
       font-weight: 700;
       color: var(--warning);
     }
+    /* LOGIN SCREEN */
+    .login-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .login-card {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .login-card h2 { font-size: 22px; margin-bottom: 4px; color: var(--text); }
+    .login-card .login-subtitle { color: var(--text-light); font-size: 14px; margin-bottom: 24px; }
+    .login-card input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 12px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .login-card input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .login-btn:hover { background: #1d4ed8; }
+    .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .login-error { color: var(--danger); font-size: 13px; margin-bottom: 12px; min-height: 18px; }
+    .login-error.success { color: var(--success); }
+    .login-toggle { color: var(--primary); font-size: 13px; cursor: pointer; margin-top: 12px; }
+    .login-toggle:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="login-overlay">
+  <div class="login-card">
+    <h2>INNOVA SOURCING</h2>
+    <p class="login-subtitle">Control de Producción — FW26-27</p>
+    <div id="login-error" class="login-error"></div>
+    <input type="email" id="login-email" placeholder="Email" autocomplete="email">
+    <input type="password" id="login-password" placeholder="Contraseña" autocomplete="current-password">
+    <button class="login-btn" id="login-btn" onclick="handleLogin()">Iniciar sesión</button>
+    <div class="login-toggle" id="login-toggle" onclick="toggleAuthMode()">¿Primera vez? Crear cuenta</div>
+  </div>
+</div>
+
 <div class="header">
   <h1>INNOVA SOURCING</h1>
-  <span class="season-badge" id="season-name">FW26-27</span>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span id="user-email" style="font-size:12px;color:var(--text-light);"></span>
+    <button id="logout-btn" onclick="handleLogout()" style="display:none;background:none;border:1px solid var(--border);padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--text-light);">Salir</button>
+    <span class="season-badge" id="season-name">FW26-27</span>
+  </div>
 </div>
 
 <div class="deadline-bar">
@@ -317,6 +389,97 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ============================================================
+// AUTH
+// ============================================================
+const ALLOWED_EMAILS = ['adrianamae.tech@gmail.com', 'ingenieria.ibtex@gmail.com', 'adrianamaebb@gmail.com'];
+let authMode = 'login';
+
+async function checkAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('user-email').textContent = session.user.email;
+    document.getElementById('logout-btn').style.display = 'inline-block';
+    return true;
+  }
+  document.getElementById('login-screen').style.display = 'flex';
+  return false;
+}
+
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+  errorEl.textContent = '';
+  errorEl.className = 'login-error';
+
+  if (!email || !password) { errorEl.textContent = 'Completa email y contraseña'; return; }
+
+  btn.disabled = true;
+  btn.textContent = authMode === 'signup' ? 'Creando...' : 'Ingresando...';
+
+  if (authMode === 'signup') {
+    if (!ALLOWED_EMAILS.includes(email)) {
+      errorEl.textContent = 'Este email no está autorizado. Contacta al administrador.';
+      btn.disabled = false; btn.textContent = 'Crear cuenta';
+      return;
+    }
+    if (password.length < 6) {
+      errorEl.textContent = 'La contraseña debe tener al menos 6 caracteres';
+      btn.disabled = false; btn.textContent = 'Crear cuenta';
+      return;
+    }
+    const { error } = await sb.auth.signUp({ email, password });
+    btn.disabled = false; btn.textContent = 'Crear cuenta';
+    if (error) { errorEl.textContent = error.message; return; }
+    errorEl.className = 'login-error success';
+    errorEl.textContent = 'Cuenta creada. Revisa tu email para confirmar, luego inicia sesión.';
+    authMode = 'login';
+    document.getElementById('login-btn').textContent = 'Iniciar sesión';
+    document.getElementById('login-toggle').textContent = '¿Primera vez? Crear cuenta';
+    return;
+  }
+
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  btn.disabled = false; btn.textContent = 'Iniciar sesión';
+  if (error) { errorEl.textContent = 'Email o contraseña incorrectos'; return; }
+
+  document.getElementById('login-screen').style.display = 'none';
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    document.getElementById('user-email').textContent = session.user.email;
+    document.getElementById('logout-btn').style.display = 'inline-block';
+  }
+  await startApp();
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('logout-btn').style.display = 'none';
+  document.getElementById('user-email').textContent = '';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('content').innerHTML = '';
+}
+
+function toggleAuthMode() {
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  const btn = document.getElementById('login-btn');
+  const toggle = document.getElementById('login-toggle');
+  if (authMode === 'signup') {
+    btn.textContent = 'Crear cuenta';
+    toggle.textContent = '¿Ya tienes cuenta? Iniciar sesión';
+  } else {
+    btn.textContent = 'Iniciar sesión';
+    toggle.textContent = '¿Primera vez? Crear cuenta';
+  }
+  document.getElementById('login-error').textContent = '';
+}
+
+// ============================================================
 // STATE
 // ============================================================
 let allItems = [];
@@ -338,6 +501,16 @@ let showExcessForm = false;
 // INIT
 // ============================================================
 async function init() {
+  // Enter key on password field triggers login
+  document.getElementById('login-password').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleLogin();
+  });
+  const isAuth = await checkAuth();
+  if (!isAuth) return;
+  await startApp();
+}
+
+async function startApp() {
   calculateDeadline();
   await loadData();
   setupTabs();
