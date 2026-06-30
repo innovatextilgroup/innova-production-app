@@ -1547,15 +1547,20 @@ function renderWorkersList() {
       }, 0);
 
       const internalTag = w.is_internal ? ' <span style="background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600;">Planta</span>' : '';
+      const allWGuias = guias.filter(g => g.worker_id === w.id && !['cancelada'].includes(g.status));
       html += `<tr>
         <td style="font-weight:600">${w.name}${internalTag}</td>
         <td>${w.phone || '—'}</td>
         <td>${wGuias.length}</td>
         <td>${wPiezas}</td>
         <td>${w.active ? '<span class="badge badge-completado">Activa</span>' : '<span class="badge badge-sin_asignar">Inactiva</span>'}</td>
-        <td><button class="btn-action" onclick="toggleWorkerActive(${w.id}, ${!w.active});" style="background:var(--neutral-light);color:var(--text);font-size:12px;padding:4px 10px;">
-          ${w.active ? 'Desactivar' : 'Activar'}
-        </button></td>
+        <td style="display:flex;gap:4px;flex-wrap:wrap;">
+          <button class="btn-action" onclick="editWorkerName(${w.id}, '${w.name.replace(/'/g, "\\'")}');" style="background:var(--primary);color:white;font-size:12px;padding:4px 10px;">Editar</button>
+          <button class="btn-action" onclick="deleteWorker(${w.id}, '${w.name.replace(/'/g, "\\'")}', ${allWGuias.length});" style="background:var(--danger);color:white;font-size:12px;padding:4px 10px;">Eliminar</button>
+          <button class="btn-action" onclick="toggleWorkerActive(${w.id}, ${!w.active});" style="background:var(--neutral-light);color:var(--text);font-size:12px;padding:4px 10px;">
+            ${w.active ? 'Desactivar' : 'Activar'}
+          </button>
+        </td>
       </tr>`;
     });
 
@@ -1580,6 +1585,35 @@ async function addWorker() {
 
 async function toggleWorkerActive(workerId, active) {
   await sb.from('workers').update({ active }).eq('id', workerId);
+  await loadData();
+  render();
+}
+
+async function editWorkerName(workerId, currentName) {
+  const newName = prompt('Nuevo nombre:', currentName);
+  if (!newName || newName.trim() === '' || newName.trim() === currentName) return;
+  const { error } = await sb.from('workers').update({ name: newName.trim() }).eq('id', workerId);
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  showToast('Nombre actualizado');
+  await loadData();
+  render();
+}
+
+async function deleteWorker(workerId, name, guiaCount) {
+  let msg = `¿Estás segura de eliminar a "${name}"?`;
+  if (guiaCount > 0) {
+    msg = `⚠️ "${name}" tiene ${guiaCount} guía${guiaCount > 1 ? 's' : ''} asignada${guiaCount > 1 ? 's' : ''}.\n\n¿Estás segura de eliminar? Esta acción no se puede deshacer.`;
+  }
+  if (!confirm(msg)) return;
+  // Delete guia_items first, then guias, then worker
+  const workerGuias = guias.filter(g => g.worker_id === workerId);
+  for (const g of workerGuias) {
+    await sb.from('guia_items').delete().eq('guia_id', g.id);
+    await sb.from('guias').delete().eq('id', g.id);
+  }
+  const { error } = await sb.from('workers').delete().eq('id', workerId);
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  showToast(`"${name}" eliminada`);
   await loadData();
   render();
 }
